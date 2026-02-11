@@ -35,6 +35,11 @@
             -ms-user-select: none;
             user-select: none;
         }
+        
+        /* Tap highlight color removal for cleaner mobile touch */
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
     </style>
 </head>
 <body class="bg-black h-screen w-screen overflow-hidden text-white no-select">
@@ -43,18 +48,18 @@
     <div class="flex flex-col landscape:flex-row h-full w-full">
 
         <!-- STOPWATCH 1 (Blue) -->
-        <div class="relative flex-1 bg-slate-900 border-b-2 landscape:border-b-0 landscape:border-r-2 border-black flex flex-col justify-between p-4 transition-colors duration-300" id="bg-1">
+        <div class="relative flex-1 bg-slate-900 border-b-2 landscape:border-b-0 landscape:border-r-2 border-black flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:bg-slate-800" id="bg-1" onclick="sw1.handleBoxClick(event)">
             
             <!-- Header -->
-            <div class="flex justify-between items-center opacity-70">
+            <div class="flex justify-between items-center opacity-70 pointer-events-none">
                 <span class="text-blue-400 font-bold uppercase tracking-widest text-sm"><i class="fas fa-stopwatch mr-2"></i>Timer A</span>
-                <button onclick="sw1.toggleMute()" class="text-slate-400 hover:text-white transition">
+                <button onclick="sw1.toggleMute()" class="text-slate-400 hover:text-white transition pointer-events-auto p-2">
                     <i class="fas fa-volume-up" id="icon-mute-1"></i>
                 </button>
             </div>
 
             <!-- Time Display -->
-            <div class="flex-grow flex flex-col justify-center items-center my-4">
+            <div class="flex-grow flex flex-col justify-center items-center my-4 pointer-events-none">
                 <div id="display-1" class="text-6xl sm:text-7xl md:text-8xl font-bold tracking-tighter tabular-nums text-blue-500 drop-shadow-lg">
                     00:00<span class="text-4xl sm:text-5xl md:text-6xl align-top text-blue-300">.00</span>
                 </div>
@@ -62,16 +67,16 @@
 
             <!-- Controls -->
             <div class="grid grid-cols-2 gap-4 mb-4">
-                <button id="btn-lap-1" onclick="sw1.lap()" disabled class="py-4 rounded-2xl bg-slate-800 text-slate-400 font-bold text-lg active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-slate-700">
+                <button id="btn-lap-1" onclick="sw1.lap()" disabled class="py-4 rounded-2xl bg-slate-800 text-slate-400 font-bold text-lg active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-slate-700 pointer-events-auto z-10">
                     LAP
                 </button>
-                <button id="btn-start-1" onclick="sw1.toggle()" class="py-4 rounded-2xl bg-blue-600 text-white font-bold text-lg shadow-lg shadow-blue-900/50 active:scale-95 transition-all active:bg-blue-500">
+                <button id="btn-start-1" onclick="sw1.toggle()" class="py-4 rounded-2xl bg-blue-600 text-white font-bold text-lg shadow-lg shadow-blue-900/50 active:scale-95 transition-all active:bg-blue-500 pointer-events-auto z-10">
                     START
                 </button>
             </div>
             
             <!-- Laps Container (Collapsible/Scrollable) -->
-            <div class="h-24 landscape:h-32 bg-slate-950/50 rounded-xl p-2 overflow-y-auto border border-slate-800/50">
+            <div class="h-24 landscape:h-32 bg-slate-950/50 rounded-xl p-2 overflow-y-auto border border-slate-800/50 pointer-events-auto z-10" onclick="event.stopPropagation()">
                 <table class="w-full text-sm text-slate-400">
                     <thead class="text-xs uppercase text-slate-600 border-b border-slate-800">
                         <tr>
@@ -90,18 +95,18 @@
         </div>
 
         <!-- STOPWATCH 2 (Red) -->
-        <div class="relative flex-1 bg-zinc-900 flex flex-col justify-between p-4 transition-colors duration-300" id="bg-2">
+        <div class="relative flex-1 bg-zinc-900 flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:bg-zinc-800" id="bg-2" onclick="sw2.handleBoxClick(event)">
              
             <!-- Header -->
-            <div class="flex justify-between items-center opacity-70">
+            <div class="flex justify-between items-center opacity-70 pointer-events-none">
                 <span class="text-red-400 font-bold uppercase tracking-widest text-sm"><i class="fas fa-stopwatch mr-2"></i>Timer B</span>
-                <button onclick="sw2.toggleMute()" class="text-zinc-400 hover:text-white transition">
+                <button onclick="sw2.toggleMute()" class="text-zinc-400 hover:text-white transition pointer-events-auto p-2">
                     <i class="fas fa-volume-up" id="icon-mute-2"></i>
                 </button>
             </div>
 
             <!-- Time Display -->
-            <div class="flex-grow flex flex-col justify-center items-center my-4">
+            <div class="flex-grow flex flex-col justify-center items-center my-4 pointer-events-none">
                 <div id="display-2" class="text-6xl sm:text-7xl md:text-8xl font-bold tracking-tighter tabular-nums text-red-500 drop-shadow-lg">
                     00:00<span class="text-4xl sm:text-5xl md:text-6xl align-top text-red-300">.00</span>
                 </div>
@@ -109,16 +114,16 @@
 
             <!-- Controls -->
             <div class="grid grid-cols-2 gap-4 mb-4">
-                <button id="btn-lap-2" onclick="sw2.lap()" disabled class="py-4 rounded-2xl bg-zinc-800 text-zinc-400 font-bold text-lg active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-zinc-700">
+                <button id="btn-lap-2" onclick="sw2.lap()" disabled class="py-4 rounded-2xl bg-zinc-800 text-zinc-400 font-bold text-lg active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-zinc-700 pointer-events-auto z-10">
                     LAP
                 </button>
-                <button id="btn-start-2" onclick="sw2.toggle()" class="py-4 rounded-2xl bg-red-600 text-white font-bold text-lg shadow-lg shadow-red-900/50 active:scale-95 transition-all active:bg-red-500">
+                <button id="btn-start-2" onclick="sw2.toggle()" class="py-4 rounded-2xl bg-red-600 text-white font-bold text-lg shadow-lg shadow-red-900/50 active:scale-95 transition-all active:bg-red-500 pointer-events-auto z-10">
                     START
                 </button>
             </div>
 
             <!-- Laps Container -->
-            <div class="h-24 landscape:h-32 bg-zinc-950/50 rounded-xl p-2 overflow-y-auto border border-zinc-800/50">
+            <div class="h-24 landscape:h-32 bg-zinc-950/50 rounded-xl p-2 overflow-y-auto border border-zinc-800/50 pointer-events-auto z-10" onclick="event.stopPropagation()">
                 <table class="w-full text-sm text-zinc-400">
                     <thead class="text-xs uppercase text-zinc-600 border-b border-zinc-800">
                         <tr>
@@ -138,9 +143,14 @@
 
     </div>
 
-    <!-- Global Reset Button (Floating) -->
+    <!-- Global Reset Button (Floating Center) -->
     <button onclick="resetAll()" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-white text-black rounded-full shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all border-4 border-black" title="Reset All">
         <i class="fas fa-undo"></i>
+    </button>
+
+    <!-- Fullscreen Toggle (Floating Bottom Center) -->
+    <button onclick="toggleFullscreen()" id="btn-fullscreen" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50 text-white/30 hover:text-white transition-all p-3 hover:bg-white/10 rounded-full" title="Toggle Fullscreen">
+        <i class="fas fa-expand fa-lg"></i>
     </button>
 
     <script>
@@ -163,6 +173,20 @@
                 this.emptyMsg = document.getElementById(`empty-laps-${id}`);
                 this.muteIcon = document.getElementById(`icon-mute-${id}`);
                 this.bg = document.getElementById(`bg-${id}`);
+            }
+
+            handleBoxClick(e) {
+                // If the user clicked a button or something inside a button, ignore it
+                if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) {
+                    return;
+                }
+                
+                // Extra safety: if clicking inside laps container
+                if (this.lapsContainer.parentNode.contains(e.target) && e.target !== this.bg) {
+                   // This is handled by stopPropagation on the div itself usually, but good to have
+                }
+
+                this.toggle();
             }
 
             formatTime(ms) {
@@ -280,11 +304,6 @@
                         const row = document.createElement('tr');
                         row.className = "hover:bg-white/5 transition-colors border-b border-white/5 last:border-0";
                         
-                        // Calculate split (difference from previous lap)
-                        // Note: laps are stored new -> old. 
-                        // Current lap time is lapTime.
-                        // Previous lap in time (next in array) is this.laps[index+1]
-                        
                         let splitTime = lapTime;
                         if (index < this.laps.length - 1) {
                             splitTime = lapTime - this.laps[index + 1];
@@ -315,7 +334,6 @@
 
             playSound(type) {
                 if (this.isMuted) return;
-                // Simple oscillator beeps for feedback without external assets
                 const AudioContext = window.AudioContext || window.webkitAudioContext;
                 if (!AudioContext) return;
                 
@@ -356,19 +374,40 @@
         function resetAll() {
             sw1.reset();
             sw2.reset();
-            
-            // Add a little animation to the button
             const btn = document.querySelector('button[title="Reset All"] i');
             btn.classList.add('fa-spin');
             setTimeout(() => btn.classList.remove('fa-spin'), 500);
         }
 
-        // Handle Spacebar to start both or active one? 
-        // Let's keep it simple: Space toggles both (Synchronized start)
+        // Fullscreen Logic
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // Listen for fullscreen changes to update icon
+        document.addEventListener('fullscreenchange', () => {
+            const icon = document.querySelector('#btn-fullscreen i');
+            if (document.fullscreenElement) {
+                icon.classList.remove('fa-expand');
+                icon.classList.add('fa-compress');
+            } else {
+                icon.classList.remove('fa-compress');
+                icon.classList.add('fa-expand');
+            }
+        });
+
+        // Spacebar Handler
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
                 e.preventDefault();
-                // If either is running, stop both. If neither, start both.
                 if (sw1.isRunning || sw2.isRunning) {
                     if (sw1.isRunning) sw1.stop();
                     if (sw2.isRunning) sw2.stop();
