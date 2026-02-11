@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dual Stopwatch</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'JetBrains Mono', monospace;
+            overscroll-behavior: none; /* Prevent pull-to-refresh on mobile */
+        }
+
+        /* Custom Scrollbar for Lap Lists */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
+        }
+        
+        /* Disable text selection for better app-feel */
+        .no-select {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="bg-black h-screen w-screen overflow-hidden text-white no-select">
+
+    <!-- Main Container: Flex Col for Portrait, Flex Row for Landscape -->
+    <div class="flex flex-col landscape:flex-row h-full w-full">
+
+        <!-- STOPWATCH 1 (Blue) -->
+        <div class="relative flex-1 bg-slate-900 border-b-2 landscape:border-b-0 landscape:border-r-2 border-black flex flex-col justify-between p-4 transition-colors duration-300" id="bg-1">
+            
+            <!-- Header -->
+            <div class="flex justify-between items-center opacity-70">
+                <span class="text-blue-400 font-bold uppercase tracking-widest text-sm"><i class="fas fa-stopwatch mr-2"></i>Timer A</span>
+                <button onclick="sw1.toggleMute()" class="text-slate-400 hover:text-white transition">
+                    <i class="fas fa-volume-up" id="icon-mute-1"></i>
+                </button>
+            </div>
+
+            <!-- Time Display -->
+            <div class="flex-grow flex flex-col justify-center items-center my-4">
+                <div id="display-1" class="text-6xl sm:text-7xl md:text-8xl font-bold tracking-tighter tabular-nums text-blue-500 drop-shadow-lg">
+                    00:00<span class="text-4xl sm:text-5xl md:text-6xl align-top text-blue-300">.00</span>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <button id="btn-lap-1" onclick="sw1.lap()" disabled class="py-4 rounded-2xl bg-slate-800 text-slate-400 font-bold text-lg active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-slate-700">
+                    LAP
+                </button>
+                <button id="btn-start-1" onclick="sw1.toggle()" class="py-4 rounded-2xl bg-blue-600 text-white font-bold text-lg shadow-lg shadow-blue-900/50 active:scale-95 transition-all active:bg-blue-500">
+                    START
+                </button>
+            </div>
+            
+            <!-- Laps Container (Collapsible/Scrollable) -->
+            <div class="h-24 landscape:h-32 bg-slate-950/50 rounded-xl p-2 overflow-y-auto border border-slate-800/50">
+                <table class="w-full text-sm text-slate-400">
+                    <thead class="text-xs uppercase text-slate-600 border-b border-slate-800">
+                        <tr>
+                            <th class="text-left pb-1 pl-2">Lap</th>
+                            <th class="text-right pb-1 pr-2">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="laps-1" class="font-mono">
+                        <!-- Laps go here -->
+                    </tbody>
+                </table>
+                <div id="empty-laps-1" class="h-full flex items-center justify-center text-slate-700 text-xs italic">
+                    No laps recorded
+                </div>
+            </div>
+        </div>
+
+        <!-- STOPWATCH 2 (Red) -->
+        <div class="relative flex-1 bg-zinc-900 flex flex-col justify-between p-4 transition-colors duration-300" id="bg-2">
+             
+            <!-- Header -->
+            <div class="flex justify-between items-center opacity-70">
+                <span class="text-red-400 font-bold uppercase tracking-widest text-sm"><i class="fas fa-stopwatch mr-2"></i>Timer B</span>
+                <button onclick="sw2.toggleMute()" class="text-zinc-400 hover:text-white transition">
+                    <i class="fas fa-volume-up" id="icon-mute-2"></i>
+                </button>
+            </div>
+
+            <!-- Time Display -->
+            <div class="flex-grow flex flex-col justify-center items-center my-4">
+                <div id="display-2" class="text-6xl sm:text-7xl md:text-8xl font-bold tracking-tighter tabular-nums text-red-500 drop-shadow-lg">
+                    00:00<span class="text-4xl sm:text-5xl md:text-6xl align-top text-red-300">.00</span>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <button id="btn-lap-2" onclick="sw2.lap()" disabled class="py-4 rounded-2xl bg-zinc-800 text-zinc-400 font-bold text-lg active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-zinc-700">
+                    LAP
+                </button>
+                <button id="btn-start-2" onclick="sw2.toggle()" class="py-4 rounded-2xl bg-red-600 text-white font-bold text-lg shadow-lg shadow-red-900/50 active:scale-95 transition-all active:bg-red-500">
+                    START
+                </button>
+            </div>
+
+            <!-- Laps Container -->
+            <div class="h-24 landscape:h-32 bg-zinc-950/50 rounded-xl p-2 overflow-y-auto border border-zinc-800/50">
+                <table class="w-full text-sm text-zinc-400">
+                    <thead class="text-xs uppercase text-zinc-600 border-b border-zinc-800">
+                        <tr>
+                            <th class="text-left pb-1 pl-2">Lap</th>
+                            <th class="text-right pb-1 pr-2">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="laps-2" class="font-mono">
+                        <!-- Laps go here -->
+                    </tbody>
+                </table>
+                <div id="empty-laps-2" class="h-full flex items-center justify-center text-zinc-700 text-xs italic">
+                    No laps recorded
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Global Reset Button (Floating) -->
+    <button onclick="resetAll()" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-white text-black rounded-full shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all border-4 border-black" title="Reset All">
+        <i class="fas fa-undo"></i>
+    </button>
+
+    <script>
+        class Stopwatch {
+            constructor(id, colorTheme) {
+                this.id = id;
+                this.colorTheme = colorTheme; // 'blue' or 'red'
+                this.startTime = 0;
+                this.elapsedTime = 0;
+                this.intervalId = null;
+                this.isRunning = false;
+                this.laps = [];
+                this.isMuted = false;
+
+                // DOM Elements
+                this.displayEl = document.getElementById(`display-${id}`);
+                this.lapBtn = document.getElementById(`btn-lap-${id}`);
+                this.startBtn = document.getElementById(`btn-start-${id}`);
+                this.lapsContainer = document.getElementById(`laps-${id}`);
+                this.emptyMsg = document.getElementById(`empty-laps-${id}`);
+                this.muteIcon = document.getElementById(`icon-mute-${id}`);
+                this.bg = document.getElementById(`bg-${id}`);
+            }
+
+            formatTime(ms) {
+                const date = new Date(ms);
+                const m = date.getUTCMinutes().toString().padStart(2, '0');
+                const s = date.getUTCSeconds().toString().padStart(2, '0');
+                const cs = Math.floor(date.getUTCMilliseconds() / 10).toString().padStart(2, '0');
+                
+                // Return HTML string for styling the centiseconds differently
+                return `${m}:${s}<span class="text-4xl sm:text-5xl md:text-6xl align-top text-${this.colorTheme}-300">.${cs}</span>`;
+            }
+            
+            formatTimePlain(ms) {
+                const date = new Date(ms);
+                const m = date.getUTCMinutes().toString().padStart(2, '0');
+                const s = date.getUTCSeconds().toString().padStart(2, '0');
+                const cs = Math.floor(date.getUTCMilliseconds() / 10).toString().padStart(2, '0');
+                return `${m}:${s}.${cs}`;
+            }
+
+            toggle() {
+                if (this.isRunning) {
+                    this.stop();
+                } else {
+                    this.start();
+                }
+            }
+
+            start() {
+                if (!this.isRunning) {
+                    this.startTime = Date.now() - this.elapsedTime;
+                    this.intervalId = setInterval(() => {
+                        this.elapsedTime = Date.now() - this.startTime;
+                        this.updateDisplay();
+                    }, 10);
+                    this.isRunning = true;
+                    this.updateControls();
+                    this.playSound('start');
+                    
+                    // Visual feedback
+                    this.bg.classList.add(this.colorTheme === 'blue' ? 'bg-slate-800' : 'bg-zinc-800');
+                    this.bg.classList.remove(this.colorTheme === 'blue' ? 'bg-slate-900' : 'bg-zinc-900');
+                }
+            }
+
+            stop() {
+                if (this.isRunning) {
+                    clearInterval(this.intervalId);
+                    this.isRunning = false;
+                    this.updateControls();
+                    this.playSound('stop');
+
+                    // Visual feedback
+                    this.bg.classList.remove(this.colorTheme === 'blue' ? 'bg-slate-800' : 'bg-zinc-800');
+                    this.bg.classList.add(this.colorTheme === 'blue' ? 'bg-slate-900' : 'bg-zinc-900');
+                }
+            }
+
+            reset() {
+                this.stop();
+                this.elapsedTime = 0;
+                this.laps = [];
+                this.updateDisplay();
+                this.renderLaps();
+                this.lapBtn.textContent = "LAP";
+                this.lapBtn.disabled = true;
+                this.startBtn.textContent = "START";
+                
+                // Color reset
+                this.startBtn.classList.remove('bg-yellow-500', 'shadow-yellow-900/50', 'active:bg-yellow-400', 'text-black');
+                this.startBtn.classList.add(`bg-${this.colorTheme}-600`, `shadow-${this.colorTheme}-900/50`, `active:bg-${this.colorTheme}-500`, 'text-white');
+            }
+
+            lap() {
+                if (this.isRunning) {
+                    this.laps.unshift(this.elapsedTime);
+                    this.renderLaps();
+                    this.playSound('lap');
+                } else {
+                    // If stopped, the lap button acts as a specific reset for this timer
+                    this.reset();
+                }
+            }
+
+            updateDisplay() {
+                this.displayEl.innerHTML = this.formatTime(this.elapsedTime);
+            }
+
+            updateControls() {
+                if (this.isRunning) {
+                    this.startBtn.textContent = "STOP";
+                    this.startBtn.classList.remove(`bg-${this.colorTheme}-600`, `shadow-${this.colorTheme}-900/50`, `active:bg-${this.colorTheme}-500`, 'text-white');
+                    this.startBtn.classList.add('bg-red-500', 'shadow-red-900/50', 'active:bg-red-400', 'text-white');
+                    
+                    this.lapBtn.textContent = "LAP";
+                    this.lapBtn.disabled = false;
+                } else {
+                    this.startBtn.textContent = "RESUME";
+                    this.startBtn.classList.remove('bg-red-500', 'shadow-red-900/50', 'active:bg-red-400', 'text-white');
+                    this.startBtn.classList.add('bg-green-600', 'shadow-green-900/50', 'active:bg-green-500', 'text-white');
+                    
+                    this.lapBtn.textContent = "RESET";
+                    this.lapBtn.disabled = false;
+                }
+            }
+
+            renderLaps() {
+                this.lapsContainer.innerHTML = '';
+                if (this.laps.length === 0) {
+                    this.emptyMsg.style.display = 'flex';
+                } else {
+                    this.emptyMsg.style.display = 'none';
+                    this.laps.forEach((lapTime, index) => {
+                        const lapNum = this.laps.length - index;
+                        const row = document.createElement('tr');
+                        row.className = "hover:bg-white/5 transition-colors border-b border-white/5 last:border-0";
+                        
+                        // Calculate split (difference from previous lap)
+                        // Note: laps are stored new -> old. 
+                        // Current lap time is lapTime.
+                        // Previous lap in time (next in array) is this.laps[index+1]
+                        
+                        let splitTime = lapTime;
+                        if (index < this.laps.length - 1) {
+                            splitTime = lapTime - this.laps[index + 1];
+                        }
+
+                        row.innerHTML = `
+                            <td class="pl-2 py-1 text-slate-500">#${lapNum}</td>
+                            <td class="text-right pr-2 py-1 font-bold ${index === 0 ? 'text-white' : ''}">
+                                ${this.formatTimePlain(lapTime)}
+                                <div class="text-[10px] opacity-50 font-normal">+${this.formatTimePlain(splitTime)}</div>
+                            </td>
+                        `;
+                        this.lapsContainer.appendChild(row);
+                    });
+                }
+            }
+
+            toggleMute() {
+                this.isMuted = !this.isMuted;
+                if (this.isMuted) {
+                    this.muteIcon.classList.remove('fa-volume-up');
+                    this.muteIcon.classList.add('fa-volume-mute');
+                } else {
+                    this.muteIcon.classList.remove('fa-volume-mute');
+                    this.muteIcon.classList.add('fa-volume-up');
+                }
+            }
+
+            playSound(type) {
+                if (this.isMuted) return;
+                // Simple oscillator beeps for feedback without external assets
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                
+                const ctx = new AudioContext();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                if (type === 'start') {
+                    osc.frequency.value = 800;
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.1);
+                } else if (type === 'stop') {
+                    osc.frequency.value = 400;
+                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.1);
+                } else if (type === 'lap') {
+                    osc.frequency.value = 1200;
+                    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+                    osc.start();
+                    osc.stop(ctx.currentTime + 0.05);
+                }
+            }
+        }
+
+        // Initialize
+        const sw1 = new Stopwatch(1, 'blue');
+        const sw2 = new Stopwatch(2, 'red');
+
+        // Global Reset
+        function resetAll() {
+            sw1.reset();
+            sw2.reset();
+            
+            // Add a little animation to the button
+            const btn = document.querySelector('button[title="Reset All"] i');
+            btn.classList.add('fa-spin');
+            setTimeout(() => btn.classList.remove('fa-spin'), 500);
+        }
+
+        // Handle Spacebar to start both or active one? 
+        // Let's keep it simple: Space toggles both (Synchronized start)
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                // If either is running, stop both. If neither, start both.
+                if (sw1.isRunning || sw2.isRunning) {
+                    if (sw1.isRunning) sw1.stop();
+                    if (sw2.isRunning) sw2.stop();
+                } else {
+                    sw1.start();
+                    sw2.start();
+                }
+            }
+        });
+
+    </script>
+</body>
+</html>
