@@ -47,7 +47,7 @@
         /* --- Menu Animation Styles --- */
         
         /* Default Open State */
-        #btn-theme, #btn-lap-toggle, #btn-mail {
+        #btn-lap-toggle, #btn-fullscreen {
             transform: translate(0, 0) scale(1);
             opacity: 1;
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -56,37 +56,40 @@
         /* Collapsed State (Items move INTO the logo) */
         
         /* Portrait (Horizontal Movement) */
-        #control-bar.collapsed #btn-theme {
-            transform: translateX(450%) scale(0.1);
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
         #control-bar.collapsed #btn-lap-toggle {
-            transform: translateX(250%) scale(0.1);
+            transform: translateX(180%) scale(0.1);
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        #control-bar.collapsed #btn-mail {
-            transform: translateX(-320%) scale(0.1);
+        #control-bar.collapsed #btn-fullscreen {
+            transform: translateX(-180%) scale(0.1);
             opacity: 0;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         /* Landscape (Vertical Movement) */
         @media (orientation: landscape) {
-            #control-bar.collapsed #btn-theme {
-                transform: translateY(500%) scale(0.1);
-            }
             #control-bar.collapsed #btn-lap-toggle {
-                transform: translateY(280%) scale(0.1);
+                transform: translateY(180%) scale(0.1);
             }
-            #control-bar.collapsed #btn-mail {
-                transform: translateY(-350%) scale(0.1);
+            #control-bar.collapsed #btn-fullscreen {
+                transform: translateY(-180%) scale(0.1);
             }
         }
     </style>
 </head>
 <body class="bg-black h-screen w-screen overflow-hidden text-white no-select flex flex-col landscape:flex-row">
+
+    <!-- FIXED CONTROLS (Top & Bottom) -->
+    <!-- 1. Color Picker (Fixed Top Center) -->
+    <button id="btn-theme" onclick="cycleTheme()" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-md text-white/50 hover:text-white hover:bg-black/60 transition-all shadow-lg border border-white/5" title="Change Theme">
+        <i class="fas fa-palette"></i>
+    </button>
+
+    <!-- 2. Mail (Fixed Bottom Center) -->
+    <a id="btn-mail" href="mailto:arunthomas04042001@gmail.com" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-md text-white/50 hover:text-white hover:bg-black/60 transition-all shadow-lg border border-white/5" title="Contact Developer">
+        <i class="fas fa-envelope"></i>
+    </a>
 
     <!-- STOPWATCH 1 (Left/Top) -->
     <div class="flex-1 relative flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:brightness-110 border-b-2 landscape:border-b-0 landscape:border-r-2 border-black/30" id="bg-1" onclick="sw1.handleBoxClick(event)">
@@ -126,42 +129,32 @@
         </div>
     </div>
 
-    <!-- FLOATING CONTROL ICONS -->
-    <!-- Updated landscape:top-[40%] to better center logo with time -->
-    <div id="control-bar" class="absolute top-1/2 landscape:top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 
+    <!-- CENTRAL CONTROL BAR (Floating) -->
+    <!-- Reduced to 4 items + Logo for cleaner mobile look -->
+    <div id="control-bar" class="absolute top-1/2 landscape:top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 
                 flex items-center justify-center pointer-events-none
                 flex-row space-x-3
                 landscape:flex-col landscape:space-x-0 landscape:space-y-4">
         
-        <!-- 1. Color Picker -->
-        <button id="btn-theme" onclick="cycleTheme()" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white hover:bg-black/70 transition-all pointer-events-auto relative z-0 shadow-lg border border-white/10" title="Change Theme">
-            <i class="fas fa-palette"></i>
-        </button>
-
-        <!-- 2. Lap Mode Toggle (New) -->
+        <!-- 1. Lap Mode Toggle -->
         <button id="btn-lap-toggle" onclick="toggleLapMode()" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white hover:bg-black/70 transition-all pointer-events-auto relative z-0 shadow-lg border border-white/10" title="Toggle Lap Mode">
             <i class="fas fa-flag"></i>
         </button>
 
-        <!-- 3. Reset -->
+        <!-- 2. Reset (Static next to logo) -->
         <button onclick="resetAll()" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white transition-all hover:bg-black/70 pointer-events-auto relative z-10 shadow-lg border border-white/10" title="Reset All">
             <i class="fas fa-undo text-sm"></i>
         </button>
 
-        <!-- 4. Logo (Trigger) -->
+        <!-- 3. Logo (Trigger) -->
         <div onclick="toggleMenu()" class="w-8 h-8 md:w-10 md:h-10 hover:scale-110 active:scale-95 transition-transform duration-300 cursor-pointer relative z-20 pointer-events-auto drop-shadow-2xl" title="Toggle Menu">
             <img src="logo.svg" alt="DuoWatch Logo" class="w-full h-full object-contain">
         </div>
 
-        <!-- 5. Fullscreen -->
-        <button onclick="toggleFullscreen()" id="btn-fullscreen" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white transition-all hover:bg-black/70 pointer-events-auto relative z-10 shadow-lg border border-white/10" title="Toggle Fullscreen">
+        <!-- 4. Fullscreen (Collapsible) -->
+        <button onclick="toggleFullscreen()" id="btn-fullscreen" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white transition-all hover:bg-black/70 pointer-events-auto relative z-0 shadow-lg border border-white/10" title="Toggle Fullscreen">
             <i class="fas fa-expand"></i>
         </button>
-
-        <!-- 6. Mail -->
-        <a id="btn-mail" href="mailto:arunthomas04042001@gmail.com" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white hover:bg-black/70 pointer-events-auto relative z-0 shadow-lg border border-white/10" title="Contact Developer">
-            <i class="fas fa-envelope"></i>
-        </a>
     </div>
 
     <!-- STOPWATCH 2 (Right/Bottom) -->
