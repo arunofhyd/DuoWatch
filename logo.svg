@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <!-- Top Button -->
+  <rect x="44" y="2" width="12" height="10" rx="2" fill="#cbd5e1" />
+  <rect x="47" y="0" width="6" height="4" rx="1" fill="#94a3b8" />
+  
+  <!-- Angled Buttons -->
+  <path d="M25 18 L32 12" stroke="#94a3b8" stroke-width="6" stroke-linecap="round" />
+  <path d="M75 18 L68 12" stroke="#94a3b8" stroke-width="6" stroke-linecap="round" />
+
+  <!-- Main Body Background -->
+  <circle cx="50" cy="55" r="42" fill="#0f172a" stroke="#cbd5e1" stroke-width="4"/>
+
+  <!-- Split Colored Interior -->
+  <g clip-path="url(#circle-clip)">
+    <!-- Left Blue Half -->
+    <path d="M50 13 A42 42 0 0 0 50 97 V55 Z" fill="#3b82f6" />
+    <!-- Right Red Half -->
+    <path d="M50 13 A42 42 0 0 1 50 97 V55 Z" fill="#ef4444" />
+  </g>
+  
+  <!-- Clip Path Definition -->
+  <defs>
+    <clipPath id="circle-clip">
+      <circle cx="50" cy="55" r="38" />
+    </clipPath>
+  </defs>
+
+  <!-- Hands/Center -->
+  <circle cx="50" cy="55" r="4" fill="white" />
+  <path d="M50 55 L50 25" stroke="white" stroke-width="3" stroke-linecap="round" />
+  <path d="M50 55 L65 65" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.7" />
+
+  <!-- Gloss/Reflection -->
+  <path d="M25 35 Q 50 20 75 35" stroke="white" stroke-width="2" stroke-linecap="round" opacity="0.2" fill="none" />
+</svg>
