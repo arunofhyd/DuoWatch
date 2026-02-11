@@ -5,16 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     
     <!-- SEO & Metadata -->
-    <title>DuoWatch | Professional Dual Split-Screen Stopwatch</title>
-    <meta name="description" content="A mobile-first dual stopwatch with split-screen landscape mode. Perfect for debates, gaming, and sports. Features two independent timers with lap tracking.">
+    <title>DuoWatch | Dual Stopwatch</title>
+    <meta name="description" content="A simple, mobile-first dual stopwatch.">
     <link rel="canonical" href="https://duowatch.vercel.app">
     
     <!-- Icons & Social -->
     <link rel="icon" type="image/svg+xml" href="logo.svg">
     <link rel="apple-touch-icon" href="logo.svg">
     <meta name="theme-color" content="#000000">
-    <meta property="og:title" content="DuoWatch - Dual Stopwatch">
-    <meta property="og:description" content="Professional split-screen stopwatch for mobile and desktop.">
+    <meta property="og:title" content="DuoWatch | Dual Stopwatch">
+    <meta property="og:description" content="A simple, mobile-first dual stopwatch.">
     <meta property="og:image" content="logo.svg">
     <meta property="og:url" content="https://duowatch.vercel.app">
     <meta property="og:type" content="website">
@@ -81,7 +81,8 @@
 <body class="bg-black h-screen w-screen overflow-hidden text-white no-select flex flex-col landscape:flex-row">
 
     <!-- STOPWATCH 1 (Left/Top) -->
-    <div class="flex-1 relative flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:brightness-110" id="bg-1" onclick="sw1.handleBoxClick(event)">
+    <!-- Added border classes to separate the two timers visually at the intersection -->
+    <div class="flex-1 relative flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:brightness-110 border-b-2 landscape:border-b-0 landscape:border-r-2 border-black/30" id="bg-1" onclick="sw1.handleBoxClick(event)">
         <!-- Header -->
         <div class="flex justify-between items-center opacity-70 pointer-events-none">
             <span class="font-bold uppercase tracking-widest text-sm" id="label-1"><i class="fas fa-stopwatch mr-2"></i>Timer A</span>
@@ -116,35 +117,36 @@
         </div>
     </div>
 
-    <!-- CENTRAL CONTROL BAR -->
-    <!-- Portrait: Horizontal Row (h-16) | Landscape: Vertical Column (w-16) -->
-    <div id="control-bar" class="relative z-50 bg-black flex items-center justify-center 
-                h-16 w-full flex-row space-x-4 border-y border-white/10
-                landscape:h-full landscape:w-20 landscape:flex-col landscape:space-x-0 landscape:space-y-6 landscape:border-y-0 landscape:border-x">
+    <!-- FLOATING CONTROL ICONS -->
+    <!-- Positioned absolutely in the center, removing the physical bar space -->
+    <!-- pointer-events-none on wrapper ensures clicks pass through gaps to timers -->
+    <div id="control-bar" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 
+                flex items-center justify-center pointer-events-none
+                flex-row space-x-4
+                landscape:flex-col landscape:space-x-0 landscape:space-y-6">
         
         <!-- 1. Color Picker (Collapsible) -->
-        <button id="btn-theme" onclick="cycleTheme()" class="w-8 h-8 flex items-center justify-center rounded-full text-white/50 hover:text-white hover:bg-white/10 relative z-0" title="Change Theme">
+        <button id="btn-theme" onclick="cycleTheme()" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white hover:bg-black/70 transition-all pointer-events-auto relative z-0 shadow-lg border border-white/10" title="Change Theme">
             <i class="fas fa-palette"></i>
         </button>
 
         <!-- 2. Reset (Static) -->
-        <button onclick="resetAll()" class="w-8 h-8 flex items-center justify-center rounded-full text-white/50 hover:text-white transition-all hover:bg-white/10 relative z-10" title="Reset All">
+        <button onclick="resetAll()" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white transition-all hover:bg-black/70 pointer-events-auto relative z-10 shadow-lg border border-white/10" title="Reset All">
             <i class="fas fa-undo text-sm"></i>
         </button>
 
         <!-- 3. Logo (Trigger) -->
-        <!-- Added cursor-pointer and toggleMenu function -->
-        <div onclick="toggleMenu()" class="w-10 h-10 hover:scale-110 active:scale-95 transition-transform duration-300 cursor-pointer relative z-20" title="Toggle Menu">
-            <img src="logo.svg" alt="DuoWatch Logo" class="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+        <div onclick="toggleMenu()" class="w-14 h-14 hover:scale-110 active:scale-95 transition-transform duration-300 cursor-pointer relative z-20 pointer-events-auto drop-shadow-2xl" title="Toggle Menu">
+            <img src="logo.svg" alt="DuoWatch Logo" class="w-full h-full object-contain">
         </div>
 
         <!-- 4. Fullscreen (Static) -->
-        <button onclick="toggleFullscreen()" id="btn-fullscreen" class="w-8 h-8 flex items-center justify-center rounded-full text-white/50 hover:text-white transition-all hover:bg-white/10 relative z-10" title="Toggle Fullscreen">
+        <button onclick="toggleFullscreen()" id="btn-fullscreen" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white transition-all hover:bg-black/70 pointer-events-auto relative z-10 shadow-lg border border-white/10" title="Toggle Fullscreen">
             <i class="fas fa-expand"></i>
         </button>
 
         <!-- 5. Mail (Collapsible) -->
-        <a id="btn-mail" href="mailto:arunthomas04042001@gmail.com" class="w-8 h-8 flex items-center justify-center rounded-full text-white/50 hover:text-white hover:bg-white/10 relative z-0" title="Contact Developer">
+        <a id="btn-mail" href="mailto:arunthomas04042001@gmail.com" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white hover:bg-black/70 pointer-events-auto relative z-0 shadow-lg border border-white/10" title="Contact Developer">
             <i class="fas fa-envelope"></i>
         </a>
     </div>
@@ -255,7 +257,9 @@
                 const config = this.id === 1 ? theme.t1 : theme.t2;
                 
                 // Reset BG classes
-                this.bg.className = `flex-1 relative flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:brightness-110 ${this.isRunning ? config.bgOn : config.bgOff}`;
+                // Added border class for bg-1 to maintain separation
+                const borderClass = this.id === 1 ? 'border-b-2 landscape:border-b-0 landscape:border-r-2 border-black/30' : '';
+                this.bg.className = `flex-1 relative flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:brightness-110 ${borderClass} ${this.isRunning ? config.bgOn : config.bgOff}`;
                 
                 // Update Text Colors
                 this.displayEl.className = `text-6xl sm:text-7xl md:text-8xl font-bold tracking-tighter tabular-nums drop-shadow-lg transition-colors duration-300 ${config.text}`;
