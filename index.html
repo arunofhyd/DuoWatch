@@ -2,162 +2,229 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dual Stopwatch</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <!-- SEO & Metadata -->
+    <title>DuoWatch | Professional Dual Split-Screen Stopwatch</title>
+    <meta name="description" content="A mobile-first dual stopwatch with split-screen landscape mode. Perfect for debates, gaming, and sports. Features two independent timers with lap tracking.">
+    <link rel="canonical" href="https://duowatch.vercel.app">
+    
+    <!-- Icons & Social -->
+    <link rel="icon" type="image/svg+xml" href="logo.svg">
+    <link rel="apple-touch-icon" href="logo.svg">
+    <meta name="theme-color" content="#000000">
+    <meta property="og:title" content="DuoWatch - Dual Stopwatch">
+    <meta property="og:description" content="Professional split-screen stopwatch for mobile and desktop.">
+    <meta property="og:image" content="logo.svg">
+    <meta property="og:url" content="https://duowatch.vercel.app">
+    <meta property="og:type" content="website">
+
+    <!-- Dependencies -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
         
         body {
             font-family: 'JetBrains Mono', monospace;
-            overscroll-behavior: none; /* Prevent pull-to-refresh on mobile */
+            overscroll-behavior: none;
         }
 
-        /* Custom Scrollbar for Lap Lists */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
-        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 2px; }
         
-        /* Disable text selection for better app-feel */
         .no-select {
             -webkit-touch-callout: none;
             -webkit-user-select: none;
-            -khtml-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
             user-select: none;
         }
         
-        /* Tap highlight color removal for cleaner mobile touch */
-        * {
-            -webkit-tap-highlight-color: transparent;
+        * { -webkit-tap-highlight-color: transparent; }
+
+        /* --- Menu Animation Styles --- */
+        
+        /* Default Open State (Explicitly set for transition origin) */
+        #btn-theme, #btn-mail {
+            transform: translate(0, 0) scale(1);
+            opacity: 1;
+            /* Bouncy spring effect for appearing */
+            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Collapsed State (Items move INTO the logo) */
+        /* Portrait (Horizontal Movement) */
+        #control-bar.collapsed #btn-theme {
+            transform: translateX(320%) scale(0.1);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Faster ease-in for hiding */
+        }
+        #control-bar.collapsed #btn-mail {
+            transform: translateX(-320%) scale(0.1);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* Landscape (Vertical Movement) */
+        @media (orientation: landscape) {
+            #control-bar.collapsed #btn-theme {
+                transform: translateY(350%) scale(0.1);
+            }
+            #control-bar.collapsed #btn-mail {
+                transform: translateY(-350%) scale(0.1);
+            }
         }
     </style>
 </head>
-<body class="bg-black h-screen w-screen overflow-hidden text-white no-select">
+<body class="bg-black h-screen w-screen overflow-hidden text-white no-select flex flex-col landscape:flex-row">
 
-    <!-- Main Container: Flex Col for Portrait, Flex Row for Landscape -->
-    <div class="flex flex-col landscape:flex-row h-full w-full">
+    <!-- STOPWATCH 1 (Left/Top) -->
+    <div class="flex-1 relative flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:brightness-110" id="bg-1" onclick="sw1.handleBoxClick(event)">
+        <!-- Header -->
+        <div class="flex justify-between items-center opacity-70 pointer-events-none">
+            <span class="font-bold uppercase tracking-widest text-sm" id="label-1"><i class="fas fa-stopwatch mr-2"></i>Timer A</span>
+            <button onclick="sw1.toggleMute()" class="text-white/50 hover:text-white transition pointer-events-auto p-2">
+                <i class="fas fa-volume-up" id="icon-mute-1"></i>
+            </button>
+        </div>
 
-        <!-- STOPWATCH 1 (Blue) -->
-        <div class="relative flex-1 bg-slate-900 border-b-2 landscape:border-b-0 landscape:border-r-2 border-black flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:bg-slate-800" id="bg-1" onclick="sw1.handleBoxClick(event)">
-            
-            <!-- Header -->
-            <div class="flex justify-between items-center opacity-70 pointer-events-none">
-                <span class="text-blue-400 font-bold uppercase tracking-widest text-sm"><i class="fas fa-stopwatch mr-2"></i>Timer A</span>
-                <button onclick="sw1.toggleMute()" class="text-slate-400 hover:text-white transition pointer-events-auto p-2">
-                    <i class="fas fa-volume-up" id="icon-mute-1"></i>
-                </button>
-            </div>
-
-            <!-- Time Display -->
-            <div class="flex-grow flex flex-col justify-center items-center my-4 pointer-events-none">
-                <div id="display-1" class="text-6xl sm:text-7xl md:text-8xl font-bold tracking-tighter tabular-nums text-blue-500 drop-shadow-lg">
-                    00:00<span class="text-4xl sm:text-5xl md:text-6xl align-top text-blue-300">.00</span>
-                </div>
-            </div>
-
-            <!-- Controls -->
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <button id="btn-lap-1" onclick="sw1.lap()" disabled class="py-4 rounded-2xl bg-slate-800 text-slate-400 font-bold text-lg active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-slate-700 pointer-events-auto z-10">
-                    LAP
-                </button>
-                <button id="btn-start-1" onclick="sw1.toggle()" class="py-4 rounded-2xl bg-blue-600 text-white font-bold text-lg shadow-lg shadow-blue-900/50 active:scale-95 transition-all active:bg-blue-500 pointer-events-auto z-10">
-                    START
-                </button>
-            </div>
-            
-            <!-- Laps Container (Collapsible/Scrollable) -->
-            <div class="h-24 landscape:h-32 bg-slate-950/50 rounded-xl p-2 overflow-y-auto border border-slate-800/50 pointer-events-auto z-10" onclick="event.stopPropagation()">
-                <table class="w-full text-sm text-slate-400">
-                    <thead class="text-xs uppercase text-slate-600 border-b border-slate-800">
-                        <tr>
-                            <th class="text-left pb-1 pl-2">Lap</th>
-                            <th class="text-right pb-1 pr-2">Time</th>
-                        </tr>
-                    </thead>
-                    <tbody id="laps-1" class="font-mono">
-                        <!-- Laps go here -->
-                    </tbody>
-                </table>
-                <div id="empty-laps-1" class="h-full flex items-center justify-center text-slate-700 text-xs italic">
-                    No laps recorded
-                </div>
+        <!-- Time Display -->
+        <div class="flex-grow flex flex-col justify-center items-center my-2 pointer-events-none">
+            <div id="display-1" class="text-6xl sm:text-7xl md:text-8xl font-bold tracking-tighter tabular-nums drop-shadow-lg transition-colors duration-300">
+                00:00<span class="text-4xl sm:text-5xl md:text-6xl align-top opacity-70">.00</span>
             </div>
         </div>
 
-        <!-- STOPWATCH 2 (Red) -->
-        <div class="relative flex-1 bg-zinc-900 flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:bg-zinc-800" id="bg-2" onclick="sw2.handleBoxClick(event)">
-             
-            <!-- Header -->
-            <div class="flex justify-between items-center opacity-70 pointer-events-none">
-                <span class="text-red-400 font-bold uppercase tracking-widest text-sm"><i class="fas fa-stopwatch mr-2"></i>Timer B</span>
-                <button onclick="sw2.toggleMute()" class="text-zinc-400 hover:text-white transition pointer-events-auto p-2">
-                    <i class="fas fa-volume-up" id="icon-mute-2"></i>
-                </button>
-            </div>
-
-            <!-- Time Display -->
-            <div class="flex-grow flex flex-col justify-center items-center my-4 pointer-events-none">
-                <div id="display-2" class="text-6xl sm:text-7xl md:text-8xl font-bold tracking-tighter tabular-nums text-red-500 drop-shadow-lg">
-                    00:00<span class="text-4xl sm:text-5xl md:text-6xl align-top text-red-300">.00</span>
-                </div>
-            </div>
-
-            <!-- Controls -->
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <button id="btn-lap-2" onclick="sw2.lap()" disabled class="py-4 rounded-2xl bg-zinc-800 text-zinc-400 font-bold text-lg active:scale-95 transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-zinc-700 pointer-events-auto z-10">
-                    LAP
-                </button>
-                <button id="btn-start-2" onclick="sw2.toggle()" class="py-4 rounded-2xl bg-red-600 text-white font-bold text-lg shadow-lg shadow-red-900/50 active:scale-95 transition-all active:bg-red-500 pointer-events-auto z-10">
-                    START
-                </button>
-            </div>
-
-            <!-- Laps Container -->
-            <div class="h-24 landscape:h-32 bg-zinc-950/50 rounded-xl p-2 overflow-y-auto border border-zinc-800/50 pointer-events-auto z-10" onclick="event.stopPropagation()">
-                <table class="w-full text-sm text-zinc-400">
-                    <thead class="text-xs uppercase text-zinc-600 border-b border-zinc-800">
-                        <tr>
-                            <th class="text-left pb-1 pl-2">Lap</th>
-                            <th class="text-right pb-1 pr-2">Time</th>
-                        </tr>
-                    </thead>
-                    <tbody id="laps-2" class="font-mono">
-                        <!-- Laps go here -->
-                    </tbody>
-                </table>
-                <div id="empty-laps-2" class="h-full flex items-center justify-center text-zinc-700 text-xs italic">
-                    No laps recorded
-                </div>
-            </div>
+        <!-- Controls -->
+        <div class="grid grid-cols-2 gap-4 mb-2">
+            <button id="btn-lap-1" onclick="sw1.lap()" disabled class="py-3 sm:py-4 rounded-2xl bg-black/20 text-white/50 font-bold text-lg backdrop-blur-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-white/10 pointer-events-auto z-10 hover:bg-black/40">
+                LAP
+            </button>
+            <button id="btn-start-1" onclick="sw1.toggle()" class="py-3 sm:py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all pointer-events-auto z-10 text-white">
+                START
+            </button>
         </div>
-
+        
+        <!-- Laps -->
+        <div class="h-20 landscape:h-24 bg-black/20 rounded-xl p-2 overflow-y-auto border border-white/5 pointer-events-auto z-10 backdrop-blur-sm" onclick="event.stopPropagation()">
+            <table class="w-full text-sm text-white/60">
+                <tbody id="laps-1" class="font-mono"></tbody>
+            </table>
+            <div id="empty-laps-1" class="h-full flex items-center justify-center text-white/30 text-xs italic">No laps</div>
+        </div>
     </div>
 
-    <!-- Global Reset Button (Floating Center) -->
-    <button onclick="resetAll()" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 w-12 h-12 bg-white text-black rounded-full shadow-xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all border-4 border-black" title="Reset All">
-        <i class="fas fa-undo"></i>
-    </button>
+    <!-- CENTRAL CONTROL BAR -->
+    <!-- Portrait: Horizontal Row (h-16) | Landscape: Vertical Column (w-16) -->
+    <div id="control-bar" class="relative z-50 bg-black flex items-center justify-center 
+                h-16 w-full flex-row space-x-4 border-y border-white/10
+                landscape:h-full landscape:w-20 landscape:flex-col landscape:space-x-0 landscape:space-y-6 landscape:border-y-0 landscape:border-x">
+        
+        <!-- 1. Color Picker (Collapsible) -->
+        <button id="btn-theme" onclick="cycleTheme()" class="w-8 h-8 flex items-center justify-center rounded-full text-white/50 hover:text-white hover:bg-white/10 relative z-0" title="Change Theme">
+            <i class="fas fa-palette"></i>
+        </button>
 
-    <!-- Fullscreen Toggle (Floating Bottom Center) -->
-    <button onclick="toggleFullscreen()" id="btn-fullscreen" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50 text-white/30 hover:text-white transition-all p-3 hover:bg-white/10 rounded-full" title="Toggle Fullscreen">
-        <i class="fas fa-expand fa-lg"></i>
-    </button>
+        <!-- 2. Reset (Static) -->
+        <button onclick="resetAll()" class="w-8 h-8 flex items-center justify-center rounded-full text-white/50 hover:text-white transition-all hover:bg-white/10 relative z-10" title="Reset All">
+            <i class="fas fa-undo text-sm"></i>
+        </button>
+
+        <!-- 3. Logo (Trigger) -->
+        <!-- Added cursor-pointer and toggleMenu function -->
+        <div onclick="toggleMenu()" class="w-10 h-10 hover:scale-110 active:scale-95 transition-transform duration-300 cursor-pointer relative z-20" title="Toggle Menu">
+            <img src="logo.svg" alt="DuoWatch Logo" class="w-full h-full object-contain drop-shadow-[0_0_8px_rgba(255,255,255,0.3)]">
+        </div>
+
+        <!-- 4. Fullscreen (Static) -->
+        <button onclick="toggleFullscreen()" id="btn-fullscreen" class="w-8 h-8 flex items-center justify-center rounded-full text-white/50 hover:text-white transition-all hover:bg-white/10 relative z-10" title="Toggle Fullscreen">
+            <i class="fas fa-expand"></i>
+        </button>
+
+        <!-- 5. Mail (Collapsible) -->
+        <a id="btn-mail" href="mailto:arunthomas04042001@gmail.com" class="w-8 h-8 flex items-center justify-center rounded-full text-white/50 hover:text-white hover:bg-white/10 relative z-0" title="Contact Developer">
+            <i class="fas fa-envelope"></i>
+        </a>
+    </div>
+
+    <!-- STOPWATCH 2 (Right/Bottom) -->
+    <div class="flex-1 relative flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:brightness-110" id="bg-2" onclick="sw2.handleBoxClick(event)">
+        <!-- Header -->
+        <div class="flex justify-between items-center opacity-70 pointer-events-none">
+            <span class="font-bold uppercase tracking-widest text-sm" id="label-2"><i class="fas fa-stopwatch mr-2"></i>Timer B</span>
+            <button onclick="sw2.toggleMute()" class="text-white/50 hover:text-white transition pointer-events-auto p-2">
+                <i class="fas fa-volume-up" id="icon-mute-2"></i>
+            </button>
+        </div>
+
+        <!-- Time Display -->
+        <div class="flex-grow flex flex-col justify-center items-center my-2 pointer-events-none">
+            <div id="display-2" class="text-6xl sm:text-7xl md:text-8xl font-bold tracking-tighter tabular-nums drop-shadow-lg transition-colors duration-300">
+                00:00<span class="text-4xl sm:text-5xl md:text-6xl align-top opacity-70">.00</span>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="grid grid-cols-2 gap-4 mb-2">
+            <button id="btn-lap-2" onclick="sw2.lap()" disabled class="py-3 sm:py-4 rounded-2xl bg-black/20 text-white/50 font-bold text-lg backdrop-blur-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-white/10 pointer-events-auto z-10 hover:bg-black/40">
+                LAP
+            </button>
+            <button id="btn-start-2" onclick="sw2.toggle()" class="py-3 sm:py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all pointer-events-auto z-10 text-white">
+                START
+            </button>
+        </div>
+
+        <!-- Laps -->
+        <div class="h-20 landscape:h-24 bg-black/20 rounded-xl p-2 overflow-y-auto border border-white/5 pointer-events-auto z-10 backdrop-blur-sm" onclick="event.stopPropagation()">
+            <table class="w-full text-sm text-white/60">
+                <tbody id="laps-2" class="font-mono"></tbody>
+            </table>
+            <div id="empty-laps-2" class="h-full flex items-center justify-center text-white/30 text-xs italic">No laps</div>
+        </div>
+    </div>
 
     <script>
+        // Expanded Theme Configurations
+        const themes = [
+            { // 1. Default: Blue vs Red
+                id: 0,
+                t1: { text: 'text-blue-500', sub: 'text-blue-300', bgOff: 'bg-slate-900', bgOn: 'bg-slate-800', btn: 'bg-blue-600', shadow: 'shadow-blue-900/50' },
+                t2: { text: 'text-red-500', sub: 'text-red-300', bgOff: 'bg-zinc-900', bgOn: 'bg-zinc-800', btn: 'bg-red-600', shadow: 'shadow-red-900/50' }
+            },
+            { // 2. Neon: Green vs Purple
+                id: 1,
+                t1: { text: 'text-emerald-500', sub: 'text-emerald-300', bgOff: 'bg-neutral-900', bgOn: 'bg-neutral-800', btn: 'bg-emerald-600', shadow: 'shadow-emerald-900/50' },
+                t2: { text: 'text-purple-500', sub: 'text-purple-300', bgOff: 'bg-stone-900', bgOn: 'bg-stone-800', btn: 'bg-purple-600', shadow: 'shadow-purple-900/50' }
+            },
+            { // 3. Solar: Orange vs Cyan
+                id: 2,
+                t1: { text: 'text-orange-500', sub: 'text-orange-300', bgOff: 'bg-gray-900', bgOn: 'bg-gray-800', btn: 'bg-orange-600', shadow: 'shadow-orange-900/50' },
+                t2: { text: 'text-cyan-500', sub: 'text-cyan-300', bgOff: 'bg-slate-950', bgOn: 'bg-slate-900', btn: 'bg-cyan-600', shadow: 'shadow-cyan-900/50' }
+            },
+            { // 4. Chess (Monochrome): White vs Silver
+                id: 3,
+                t1: { text: 'text-white', sub: 'text-gray-400', bgOff: 'bg-neutral-950', bgOn: 'bg-neutral-900', btn: 'bg-neutral-700', shadow: 'shadow-neutral-900/50' },
+                t2: { text: 'text-gray-300', sub: 'text-gray-500', bgOff: 'bg-zinc-900', bgOn: 'bg-zinc-800', btn: 'bg-zinc-700', shadow: 'shadow-zinc-900/50' }
+            },
+            { // 5. Miami: Pink vs Teal
+                id: 4,
+                t1: { text: 'text-pink-500', sub: 'text-pink-300', bgOff: 'bg-pink-950/20', bgOn: 'bg-pink-900/40', btn: 'bg-pink-600', shadow: 'shadow-pink-900/50' },
+                t2: { text: 'text-teal-400', sub: 'text-teal-200', bgOff: 'bg-teal-950/20', bgOn: 'bg-teal-900/40', btn: 'bg-teal-600', shadow: 'shadow-teal-900/50' }
+            },
+            { // 6. Forest: Amber vs Emerald
+                id: 5,
+                t1: { text: 'text-amber-500', sub: 'text-amber-300', bgOff: 'bg-stone-950', bgOn: 'bg-stone-900', btn: 'bg-amber-600', shadow: 'shadow-amber-900/50' },
+                t2: { text: 'text-lime-500', sub: 'text-lime-300', bgOff: 'bg-green-950', bgOn: 'bg-green-900', btn: 'bg-lime-600', shadow: 'shadow-lime-900/50' }
+            }
+        ];
+
+        let currentThemeIndex = 0;
+
         class Stopwatch {
-            constructor(id, colorTheme) {
+            constructor(id) {
                 this.id = id;
-                this.colorTheme = colorTheme; // 'blue' or 'red'
                 this.startTime = 0;
                 this.elapsedTime = 0;
                 this.intervalId = null;
@@ -173,19 +240,43 @@
                 this.emptyMsg = document.getElementById(`empty-laps-${id}`);
                 this.muteIcon = document.getElementById(`icon-mute-${id}`);
                 this.bg = document.getElementById(`bg-${id}`);
+                this.label = document.getElementById(`label-${id}`);
+
+                // Initialize with default theme
+                this.applyTheme(themes[0]);
+            }
+
+            getThemeConfig() {
+                const t = themes[currentThemeIndex];
+                return this.id === 1 ? t.t1 : t.t2;
+            }
+
+            applyTheme(theme) {
+                const config = this.id === 1 ? theme.t1 : theme.t2;
+                
+                // Reset BG classes
+                this.bg.className = `flex-1 relative flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:brightness-110 ${this.isRunning ? config.bgOn : config.bgOff}`;
+                
+                // Update Text Colors
+                this.displayEl.className = `text-6xl sm:text-7xl md:text-8xl font-bold tracking-tighter tabular-nums drop-shadow-lg transition-colors duration-300 ${config.text}`;
+                this.label.className = `font-bold uppercase tracking-widest text-sm ${config.sub}`;
+
+                // Update Button if not running (if running, it's red)
+                if (!this.isRunning) {
+                    this.updateStartButtonVisuals(config.btn, config.shadow, 'text-white');
+                }
+                
+                // Force display update to refresh inner HTML span color
+                this.updateDisplay();
+            }
+
+            updateStartButtonVisuals(bgClass, shadowClass, textClass) {
+                // Clear old color classes
+                this.startBtn.className = `py-3 sm:py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all pointer-events-auto z-10 ${bgClass} ${shadowClass} ${textClass}`;
             }
 
             handleBoxClick(e) {
-                // If the user clicked a button or something inside a button, ignore it
-                if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) {
-                    return;
-                }
-                
-                // Extra safety: if clicking inside laps container
-                if (this.lapsContainer.parentNode.contains(e.target) && e.target !== this.bg) {
-                   // This is handled by stopPropagation on the div itself usually, but good to have
-                }
-
+                if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;
                 this.toggle();
             }
 
@@ -195,10 +286,10 @@
                 const s = date.getUTCSeconds().toString().padStart(2, '0');
                 const cs = Math.floor(date.getUTCMilliseconds() / 10).toString().padStart(2, '0');
                 
-                // Return HTML string for styling the centiseconds differently
-                return `${m}:${s}<span class="text-4xl sm:text-5xl md:text-6xl align-top text-${this.colorTheme}-300">.${cs}</span>`;
+                const config = this.getThemeConfig();
+                return `${m}:${s}<span class="text-4xl sm:text-5xl md:text-6xl align-top ${config.sub}">.${cs}</span>`;
             }
-            
+
             formatTimePlain(ms) {
                 const date = new Date(ms);
                 const m = date.getUTCMinutes().toString().padStart(2, '0');
@@ -208,41 +299,53 @@
             }
 
             toggle() {
-                if (this.isRunning) {
-                    this.stop();
-                } else {
-                    this.start();
-                }
+                this.isRunning ? this.stop() : this.start();
             }
 
             start() {
-                if (!this.isRunning) {
-                    this.startTime = Date.now() - this.elapsedTime;
-                    this.intervalId = setInterval(() => {
-                        this.elapsedTime = Date.now() - this.startTime;
-                        this.updateDisplay();
-                    }, 10);
-                    this.isRunning = true;
-                    this.updateControls();
-                    this.playSound('start');
-                    
-                    // Visual feedback
-                    this.bg.classList.add(this.colorTheme === 'blue' ? 'bg-slate-800' : 'bg-zinc-800');
-                    this.bg.classList.remove(this.colorTheme === 'blue' ? 'bg-slate-900' : 'bg-zinc-900');
-                }
+                if (this.isRunning) return;
+                
+                const config = this.getThemeConfig();
+                this.startTime = Date.now() - this.elapsedTime;
+                this.intervalId = setInterval(() => {
+                    this.elapsedTime = Date.now() - this.startTime;
+                    this.updateDisplay();
+                }, 10);
+                
+                this.isRunning = true;
+                
+                // Update Visuals for Running State
+                this.startBtn.textContent = "STOP";
+                this.updateStartButtonVisuals('bg-red-500', 'shadow-red-900/50', 'text-white');
+                
+                this.lapBtn.textContent = "LAP";
+                this.lapBtn.disabled = false;
+                
+                this.bg.classList.remove(config.bgOff);
+                this.bg.classList.add(config.bgOn);
+                
+                this.playSound('start');
             }
 
             stop() {
-                if (this.isRunning) {
-                    clearInterval(this.intervalId);
-                    this.isRunning = false;
-                    this.updateControls();
-                    this.playSound('stop');
-
-                    // Visual feedback
-                    this.bg.classList.remove(this.colorTheme === 'blue' ? 'bg-slate-800' : 'bg-zinc-800');
-                    this.bg.classList.add(this.colorTheme === 'blue' ? 'bg-slate-900' : 'bg-zinc-900');
-                }
+                if (!this.isRunning) return;
+                
+                clearInterval(this.intervalId);
+                this.isRunning = false;
+                
+                const config = this.getThemeConfig();
+                
+                // Update Visuals for Stopped State
+                this.startBtn.textContent = "RESUME";
+                this.updateStartButtonVisuals('bg-green-600', 'shadow-green-900/50', 'text-white');
+                
+                this.lapBtn.textContent = "RESET";
+                this.lapBtn.disabled = false;
+                
+                this.bg.classList.remove(config.bgOn);
+                this.bg.classList.add(config.bgOff);
+                
+                this.playSound('stop');
             }
 
             reset() {
@@ -251,13 +354,14 @@
                 this.laps = [];
                 this.updateDisplay();
                 this.renderLaps();
+                
+                const config = this.getThemeConfig();
+                
                 this.lapBtn.textContent = "LAP";
                 this.lapBtn.disabled = true;
-                this.startBtn.textContent = "START";
                 
-                // Color reset
-                this.startBtn.classList.remove('bg-yellow-500', 'shadow-yellow-900/50', 'active:bg-yellow-400', 'text-black');
-                this.startBtn.classList.add(`bg-${this.colorTheme}-600`, `shadow-${this.colorTheme}-900/50`, `active:bg-${this.colorTheme}-500`, 'text-white');
+                this.startBtn.textContent = "START";
+                this.updateStartButtonVisuals(config.btn, config.shadow, 'text-white');
             }
 
             lap() {
@@ -266,31 +370,12 @@
                     this.renderLaps();
                     this.playSound('lap');
                 } else {
-                    // If stopped, the lap button acts as a specific reset for this timer
                     this.reset();
                 }
             }
 
             updateDisplay() {
                 this.displayEl.innerHTML = this.formatTime(this.elapsedTime);
-            }
-
-            updateControls() {
-                if (this.isRunning) {
-                    this.startBtn.textContent = "STOP";
-                    this.startBtn.classList.remove(`bg-${this.colorTheme}-600`, `shadow-${this.colorTheme}-900/50`, `active:bg-${this.colorTheme}-500`, 'text-white');
-                    this.startBtn.classList.add('bg-red-500', 'shadow-red-900/50', 'active:bg-red-400', 'text-white');
-                    
-                    this.lapBtn.textContent = "LAP";
-                    this.lapBtn.disabled = false;
-                } else {
-                    this.startBtn.textContent = "RESUME";
-                    this.startBtn.classList.remove('bg-red-500', 'shadow-red-900/50', 'active:bg-red-400', 'text-white');
-                    this.startBtn.classList.add('bg-green-600', 'shadow-green-900/50', 'active:bg-green-500', 'text-white');
-                    
-                    this.lapBtn.textContent = "RESET";
-                    this.lapBtn.disabled = false;
-                }
             }
 
             renderLaps() {
@@ -310,7 +395,7 @@
                         }
 
                         row.innerHTML = `
-                            <td class="pl-2 py-1 text-slate-500">#${lapNum}</td>
+                            <td class="pl-2 py-1">#${lapNum}</td>
                             <td class="text-right pr-2 py-1 font-bold ${index === 0 ? 'text-white' : ''}">
                                 ${this.formatTimePlain(lapTime)}
                                 <div class="text-[10px] opacity-50 font-normal">+${this.formatTimePlain(splitTime)}</div>
@@ -323,13 +408,7 @@
 
             toggleMute() {
                 this.isMuted = !this.isMuted;
-                if (this.isMuted) {
-                    this.muteIcon.classList.remove('fa-volume-up');
-                    this.muteIcon.classList.add('fa-volume-mute');
-                } else {
-                    this.muteIcon.classList.remove('fa-volume-mute');
-                    this.muteIcon.classList.add('fa-volume-up');
-                }
+                this.muteIcon.className = this.isMuted ? 'fas fa-volume-mute' : 'fas fa-volume-up';
             }
 
             playSound(type) {
@@ -344,33 +423,40 @@
                 osc.connect(gain);
                 gain.connect(ctx.destination);
 
+                const now = ctx.currentTime;
+                
                 if (type === 'start') {
-                    osc.frequency.value = 800;
-                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(800, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
                 } else if (type === 'stop') {
-                    osc.frequency.value = 400;
-                    gain.gain.setValueAtTime(0.1, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.1);
+                    osc.frequency.setValueAtTime(400, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
                 } else if (type === 'lap') {
-                    osc.frequency.value = 1200;
-                    gain.gain.setValueAtTime(0.05, ctx.currentTime);
-                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
-                    osc.start();
-                    osc.stop(ctx.currentTime + 0.05);
+                    osc.frequency.setValueAtTime(1200, now);
+                    gain.gain.setValueAtTime(0.05, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
                 }
             }
         }
 
         // Initialize
-        const sw1 = new Stopwatch(1, 'blue');
-        const sw2 = new Stopwatch(2, 'red');
+        const sw1 = new Stopwatch(1);
+        const sw2 = new Stopwatch(2);
 
-        // Global Reset
+        // Menu Toggle Logic
+        function toggleMenu() {
+            const bar = document.getElementById('control-bar');
+            bar.classList.toggle('collapsed');
+        }
+
         function resetAll() {
             sw1.reset();
             sw2.reset();
@@ -379,32 +465,31 @@
             setTimeout(() => btn.classList.remove('fa-spin'), 500);
         }
 
-        // Fullscreen Logic
+        function cycleTheme() {
+            currentThemeIndex = (currentThemeIndex + 1) % themes.length;
+            const newTheme = themes[currentThemeIndex];
+            sw1.applyTheme(newTheme);
+            sw2.applyTheme(newTheme);
+            
+            // Visual feedback on the button
+            const icon = document.querySelector('button[title="Change Theme"] i');
+            icon.style.transform = "rotate(180deg)";
+            setTimeout(() => icon.style.transform = "rotate(0deg)", 300);
+        }
+
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(err => {
-                    console.log(`Error attempting to enable fullscreen: ${err.message}`);
-                });
+                document.documentElement.requestFullscreen().catch(e => console.log(e));
             } else {
-                if (document.exitFullscreen) {
-                    document.exitFullscreen();
-                }
+                if (document.exitFullscreen) document.exitFullscreen();
             }
         }
 
-        // Listen for fullscreen changes to update icon
         document.addEventListener('fullscreenchange', () => {
             const icon = document.querySelector('#btn-fullscreen i');
-            if (document.fullscreenElement) {
-                icon.classList.remove('fa-expand');
-                icon.classList.add('fa-compress');
-            } else {
-                icon.classList.remove('fa-compress');
-                icon.classList.add('fa-expand');
-            }
+            icon.className = document.fullscreenElement ? 'fas fa-compress' : 'fas fa-expand';
         });
 
-        // Spacebar Handler
         document.addEventListener('keydown', (e) => {
             if (e.code === 'Space') {
                 e.preventDefault();
@@ -417,7 +502,6 @@
                 }
             }
         });
-
     </script>
 </body>
 </html>
