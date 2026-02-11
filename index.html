@@ -46,20 +46,25 @@
 
         /* --- Menu Animation Styles --- */
         
-        /* Default Open State (Explicitly set for transition origin) */
-        #btn-theme, #btn-mail {
+        /* Default Open State */
+        #btn-theme, #btn-lap-toggle, #btn-mail {
             transform: translate(0, 0) scale(1);
             opacity: 1;
-            /* Bouncy spring effect for appearing */
             transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
 
         /* Collapsed State (Items move INTO the logo) */
+        
         /* Portrait (Horizontal Movement) */
         #control-bar.collapsed #btn-theme {
-            transform: translateX(320%) scale(0.1);
+            transform: translateX(450%) scale(0.1);
             opacity: 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); /* Faster ease-in for hiding */
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        #control-bar.collapsed #btn-lap-toggle {
+            transform: translateX(250%) scale(0.1);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
         #control-bar.collapsed #btn-mail {
             transform: translateX(-320%) scale(0.1);
@@ -70,7 +75,10 @@
         /* Landscape (Vertical Movement) */
         @media (orientation: landscape) {
             #control-bar.collapsed #btn-theme {
-                transform: translateY(350%) scale(0.1);
+                transform: translateY(500%) scale(0.1);
+            }
+            #control-bar.collapsed #btn-lap-toggle {
+                transform: translateY(280%) scale(0.1);
             }
             #control-bar.collapsed #btn-mail {
                 transform: translateY(-350%) scale(0.1);
@@ -81,7 +89,6 @@
 <body class="bg-black h-screen w-screen overflow-hidden text-white no-select flex flex-col landscape:flex-row">
 
     <!-- STOPWATCH 1 (Left/Top) -->
-    <!-- Added border classes to separate the two timers visually at the intersection -->
     <div class="flex-1 relative flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:brightness-110 border-b-2 landscape:border-b-0 landscape:border-r-2 border-black/30" id="bg-1" onclick="sw1.handleBoxClick(event)">
         <!-- Header -->
         <div class="flex justify-between items-center opacity-70 pointer-events-none">
@@ -100,52 +107,57 @@
 
         <!-- Controls -->
         <div class="grid grid-cols-2 gap-4 mb-2">
-            <button id="btn-lap-1" onclick="sw1.lap()" disabled class="py-3 sm:py-4 rounded-2xl bg-black/20 text-white/50 font-bold text-lg backdrop-blur-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-white/10 pointer-events-auto z-10 hover:bg-black/40">
+            <!-- Lap button hidden by default -->
+            <button id="btn-lap-1" onclick="sw1.lap()" disabled class="hidden py-3 sm:py-4 rounded-2xl bg-black/20 text-white/50 font-bold text-lg backdrop-blur-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-white/10 pointer-events-auto z-10 hover:bg-black/40">
                 LAP
             </button>
-            <button id="btn-start-1" onclick="sw1.toggle()" class="py-3 sm:py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all pointer-events-auto z-10 text-white">
+            <!-- Start button spans full width by default -->
+            <button id="btn-start-1" onclick="sw1.toggle()" class="col-span-2 py-3 sm:py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all pointer-events-auto z-10 text-white">
                 START
             </button>
         </div>
         
-        <!-- Laps -->
-        <div class="h-20 landscape:h-24 bg-black/20 rounded-xl p-2 overflow-y-auto border border-white/5 pointer-events-auto z-10 backdrop-blur-sm" onclick="event.stopPropagation()">
-            <table class="w-full text-sm text-white/60">
+        <!-- Laps (Hidden by default) -->
+        <div id="laps-wrapper-1" class="hidden h-20 landscape:h-24 rounded-xl p-2 overflow-y-auto pointer-events-auto z-10 backdrop-blur-sm transition-colors duration-300" onclick="event.stopPropagation()">
+            <table class="w-full text-sm transition-colors duration-300">
                 <tbody id="laps-1" class="font-mono"></tbody>
             </table>
-            <div id="empty-laps-1" class="h-full flex items-center justify-center text-white/30 text-xs italic">No laps</div>
+            <div id="empty-laps-1" class="h-full flex items-center justify-center text-xs italic transition-colors duration-300">No laps</div>
         </div>
     </div>
 
     <!-- FLOATING CONTROL ICONS -->
-    <!-- Positioned absolutely in the center, removing the physical bar space -->
-    <!-- pointer-events-none on wrapper ensures clicks pass through gaps to timers -->
-    <div id="control-bar" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 
+    <div id="control-bar" class="absolute top-1/2 landscape:top-[35%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 
                 flex items-center justify-center pointer-events-none
-                flex-row space-x-4
-                landscape:flex-col landscape:space-x-0 landscape:space-y-6">
+                flex-row space-x-3
+                landscape:flex-col landscape:space-x-0 landscape:space-y-4">
         
-        <!-- 1. Color Picker (Collapsible) -->
+        <!-- 1. Color Picker -->
         <button id="btn-theme" onclick="cycleTheme()" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white hover:bg-black/70 transition-all pointer-events-auto relative z-0 shadow-lg border border-white/10" title="Change Theme">
             <i class="fas fa-palette"></i>
         </button>
 
-        <!-- 2. Reset (Static) -->
+        <!-- 2. Lap Mode Toggle (New) -->
+        <button id="btn-lap-toggle" onclick="toggleLapMode()" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white hover:bg-black/70 transition-all pointer-events-auto relative z-0 shadow-lg border border-white/10" title="Toggle Lap Mode">
+            <i class="fas fa-flag"></i>
+        </button>
+
+        <!-- 3. Reset -->
         <button onclick="resetAll()" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white transition-all hover:bg-black/70 pointer-events-auto relative z-10 shadow-lg border border-white/10" title="Reset All">
             <i class="fas fa-undo text-sm"></i>
         </button>
 
-        <!-- 3. Logo (Trigger) -->
-        <div onclick="toggleMenu()" class="w-14 h-14 hover:scale-110 active:scale-95 transition-transform duration-300 cursor-pointer relative z-20 pointer-events-auto drop-shadow-2xl" title="Toggle Menu">
+        <!-- 4. Logo (Trigger) -->
+        <div onclick="toggleMenu()" class="w-12 h-12 md:w-14 md:h-14 hover:scale-110 active:scale-95 transition-transform duration-300 cursor-pointer relative z-20 pointer-events-auto drop-shadow-2xl" title="Toggle Menu">
             <img src="logo.svg" alt="DuoWatch Logo" class="w-full h-full object-contain">
         </div>
 
-        <!-- 4. Fullscreen (Static) -->
+        <!-- 5. Fullscreen -->
         <button onclick="toggleFullscreen()" id="btn-fullscreen" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white transition-all hover:bg-black/70 pointer-events-auto relative z-10 shadow-lg border border-white/10" title="Toggle Fullscreen">
             <i class="fas fa-expand"></i>
         </button>
 
-        <!-- 5. Mail (Collapsible) -->
+        <!-- 6. Mail -->
         <a id="btn-mail" href="mailto:arunthomas04042001@gmail.com" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white hover:bg-black/70 pointer-events-auto relative z-0 shadow-lg border border-white/10" title="Contact Developer">
             <i class="fas fa-envelope"></i>
         </a>
@@ -170,20 +182,22 @@
 
         <!-- Controls -->
         <div class="grid grid-cols-2 gap-4 mb-2">
-            <button id="btn-lap-2" onclick="sw2.lap()" disabled class="py-3 sm:py-4 rounded-2xl bg-black/20 text-white/50 font-bold text-lg backdrop-blur-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-white/10 pointer-events-auto z-10 hover:bg-black/40">
+            <!-- Lap button hidden by default -->
+            <button id="btn-lap-2" onclick="sw2.lap()" disabled class="hidden py-3 sm:py-4 rounded-2xl bg-black/20 text-white/50 font-bold text-lg backdrop-blur-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-white/10 pointer-events-auto z-10 hover:bg-black/40">
                 LAP
             </button>
-            <button id="btn-start-2" onclick="sw2.toggle()" class="py-3 sm:py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all pointer-events-auto z-10 text-white">
+            <!-- Start button spans full width by default -->
+            <button id="btn-start-2" onclick="sw2.toggle()" class="col-span-2 py-3 sm:py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all pointer-events-auto z-10 text-white">
                 START
             </button>
         </div>
 
-        <!-- Laps -->
-        <div class="h-20 landscape:h-24 bg-black/20 rounded-xl p-2 overflow-y-auto border border-white/5 pointer-events-auto z-10 backdrop-blur-sm" onclick="event.stopPropagation()">
-            <table class="w-full text-sm text-white/60">
+        <!-- Laps (Hidden by default) -->
+        <div id="laps-wrapper-2" class="hidden h-20 landscape:h-24 rounded-xl p-2 overflow-y-auto pointer-events-auto z-10 backdrop-blur-sm transition-colors duration-300" onclick="event.stopPropagation()">
+            <table class="w-full text-sm transition-colors duration-300">
                 <tbody id="laps-2" class="font-mono"></tbody>
             </table>
-            <div id="empty-laps-2" class="h-full flex items-center justify-center text-white/30 text-xs italic">No laps</div>
+            <div id="empty-laps-2" class="h-full flex items-center justify-center text-xs italic transition-colors duration-300">No laps</div>
         </div>
     </div>
 
@@ -192,37 +206,38 @@
         const themes = [
             { // 1. Default: Blue vs Red
                 id: 0,
-                t1: { text: 'text-blue-500', sub: 'text-blue-300', bgOff: 'bg-slate-900', bgOn: 'bg-slate-800', btn: 'bg-blue-600', shadow: 'shadow-blue-900/50' },
-                t2: { text: 'text-red-500', sub: 'text-red-300', bgOff: 'bg-zinc-900', bgOn: 'bg-zinc-800', btn: 'bg-red-600', shadow: 'shadow-red-900/50' }
+                t1: { text: 'text-blue-500', sub: 'text-blue-300', bgOff: 'bg-slate-900', bgOn: 'bg-slate-800', btn: 'bg-blue-600', shadow: 'shadow-blue-900/50', lapsBg: 'bg-black/20', lapsBorder: 'border-white/5', lapsText: 'text-white/60', lapsEmpty: 'text-white/30', lapsRow: 'hover:bg-white/5 border-white/5', lapsTextHigh: 'text-white' },
+                t2: { text: 'text-red-500', sub: 'text-red-300', bgOff: 'bg-zinc-900', bgOn: 'bg-zinc-800', btn: 'bg-red-600', shadow: 'shadow-red-900/50', lapsBg: 'bg-black/20', lapsBorder: 'border-white/5', lapsText: 'text-white/60', lapsEmpty: 'text-white/30', lapsRow: 'hover:bg-white/5 border-white/5', lapsTextHigh: 'text-white' }
             },
             { // 2. Neon: Green vs Purple
                 id: 1,
-                t1: { text: 'text-emerald-500', sub: 'text-emerald-300', bgOff: 'bg-neutral-900', bgOn: 'bg-neutral-800', btn: 'bg-emerald-600', shadow: 'shadow-emerald-900/50' },
-                t2: { text: 'text-purple-500', sub: 'text-purple-300', bgOff: 'bg-stone-900', bgOn: 'bg-stone-800', btn: 'bg-purple-600', shadow: 'shadow-purple-900/50' }
+                t1: { text: 'text-emerald-500', sub: 'text-emerald-300', bgOff: 'bg-neutral-900', bgOn: 'bg-neutral-800', btn: 'bg-emerald-600', shadow: 'shadow-emerald-900/50', lapsBg: 'bg-black/20', lapsBorder: 'border-white/5', lapsText: 'text-white/60', lapsEmpty: 'text-white/30', lapsRow: 'hover:bg-white/5 border-white/5', lapsTextHigh: 'text-white' },
+                t2: { text: 'text-purple-500', sub: 'text-purple-300', bgOff: 'bg-stone-900', bgOn: 'bg-stone-800', btn: 'bg-purple-600', shadow: 'shadow-purple-900/50', lapsBg: 'bg-black/20', lapsBorder: 'border-white/5', lapsText: 'text-white/60', lapsEmpty: 'text-white/30', lapsRow: 'hover:bg-white/5 border-white/5', lapsTextHigh: 'text-white' }
             },
             { // 3. Solar: Orange vs Cyan
                 id: 2,
-                t1: { text: 'text-orange-500', sub: 'text-orange-300', bgOff: 'bg-gray-900', bgOn: 'bg-gray-800', btn: 'bg-orange-600', shadow: 'shadow-orange-900/50' },
-                t2: { text: 'text-cyan-500', sub: 'text-cyan-300', bgOff: 'bg-slate-950', bgOn: 'bg-slate-900', btn: 'bg-cyan-600', shadow: 'shadow-cyan-900/50' }
+                t1: { text: 'text-orange-500', sub: 'text-orange-300', bgOff: 'bg-gray-900', bgOn: 'bg-gray-800', btn: 'bg-orange-600', shadow: 'shadow-orange-900/50', lapsBg: 'bg-black/20', lapsBorder: 'border-white/5', lapsText: 'text-white/60', lapsEmpty: 'text-white/30', lapsRow: 'hover:bg-white/5 border-white/5', lapsTextHigh: 'text-white' },
+                t2: { text: 'text-cyan-500', sub: 'text-cyan-300', bgOff: 'bg-slate-950', bgOn: 'bg-slate-900', btn: 'bg-cyan-600', shadow: 'shadow-cyan-900/50', lapsBg: 'bg-black/20', lapsBorder: 'border-white/5', lapsText: 'text-white/60', lapsEmpty: 'text-white/30', lapsRow: 'hover:bg-white/5 border-white/5', lapsTextHigh: 'text-white' }
             },
-            { // 4. Chess (Monochrome): White vs Silver
+            { // 4. Chess (Panda): Black vs White
                 id: 3,
-                t1: { text: 'text-white', sub: 'text-gray-400', bgOff: 'bg-neutral-950', bgOn: 'bg-neutral-900', btn: 'bg-neutral-700', shadow: 'shadow-neutral-900/50' },
-                t2: { text: 'text-gray-300', sub: 'text-gray-500', bgOff: 'bg-zinc-900', bgOn: 'bg-zinc-800', btn: 'bg-zinc-700', shadow: 'shadow-zinc-900/50' }
+                t1: { text: 'text-white', sub: 'text-gray-400', bgOff: 'bg-black', bgOn: 'bg-neutral-900', btn: 'bg-neutral-800', shadow: 'shadow-neutral-900/50', lapsBg: 'bg-white/10', lapsBorder: 'border-white/10', lapsText: 'text-white/60', lapsEmpty: 'text-white/30', lapsRow: 'hover:bg-white/5 border-white/5', lapsTextHigh: 'text-white' },
+                t2: { text: 'text-black', sub: 'text-gray-500', bgOff: 'bg-white', bgOn: 'bg-gray-100', btn: 'bg-black', shadow: 'shadow-xl', lapsBg: 'bg-black/5', lapsBorder: 'border-black/10', lapsText: 'text-black/60', lapsEmpty: 'text-black/30', lapsRow: 'hover:bg-black/5 border-black/5', lapsTextHigh: 'text-black' }
             },
             { // 5. Miami: Pink vs Teal
                 id: 4,
-                t1: { text: 'text-pink-500', sub: 'text-pink-300', bgOff: 'bg-pink-950/20', bgOn: 'bg-pink-900/40', btn: 'bg-pink-600', shadow: 'shadow-pink-900/50' },
-                t2: { text: 'text-teal-400', sub: 'text-teal-200', bgOff: 'bg-teal-950/20', bgOn: 'bg-teal-900/40', btn: 'bg-teal-600', shadow: 'shadow-teal-900/50' }
+                t1: { text: 'text-pink-500', sub: 'text-pink-300', bgOff: 'bg-pink-950/20', bgOn: 'bg-pink-900/40', btn: 'bg-pink-600', shadow: 'shadow-pink-900/50', lapsBg: 'bg-black/20', lapsBorder: 'border-white/5', lapsText: 'text-white/60', lapsEmpty: 'text-white/30', lapsRow: 'hover:bg-white/5 border-white/5', lapsTextHigh: 'text-white' },
+                t2: { text: 'text-teal-400', sub: 'text-teal-200', bgOff: 'bg-teal-950/20', bgOn: 'bg-teal-900/40', btn: 'bg-teal-600', shadow: 'shadow-teal-900/50', lapsBg: 'bg-black/20', lapsBorder: 'border-white/5', lapsText: 'text-white/60', lapsEmpty: 'text-white/30', lapsRow: 'hover:bg-white/5 border-white/5', lapsTextHigh: 'text-white' }
             },
             { // 6. Forest: Amber vs Emerald
                 id: 5,
-                t1: { text: 'text-amber-500', sub: 'text-amber-300', bgOff: 'bg-stone-950', bgOn: 'bg-stone-900', btn: 'bg-amber-600', shadow: 'shadow-amber-900/50' },
-                t2: { text: 'text-lime-500', sub: 'text-lime-300', bgOff: 'bg-green-950', bgOn: 'bg-green-900', btn: 'bg-lime-600', shadow: 'shadow-lime-900/50' }
+                t1: { text: 'text-amber-500', sub: 'text-amber-300', bgOff: 'bg-stone-950', bgOn: 'bg-stone-900', btn: 'bg-amber-600', shadow: 'shadow-amber-900/50', lapsBg: 'bg-black/20', lapsBorder: 'border-white/5', lapsText: 'text-white/60', lapsEmpty: 'text-white/30', lapsRow: 'hover:bg-white/5 border-white/5', lapsTextHigh: 'text-white' },
+                t2: { text: 'text-lime-500', sub: 'text-lime-300', bgOff: 'bg-green-950', bgOn: 'bg-green-900', btn: 'bg-lime-600', shadow: 'shadow-lime-900/50', lapsBg: 'bg-black/20', lapsBorder: 'border-white/5', lapsText: 'text-white/60', lapsEmpty: 'text-white/30', lapsRow: 'hover:bg-white/5 border-white/5', lapsTextHigh: 'text-white' }
             }
         ];
 
         let currentThemeIndex = 0;
+        let isLapMode = false;
 
         class Stopwatch {
             constructor(id) {
@@ -243,6 +258,8 @@
                 this.muteIcon = document.getElementById(`icon-mute-${id}`);
                 this.bg = document.getElementById(`bg-${id}`);
                 this.label = document.getElementById(`label-${id}`);
+                this.lapsWrapper = document.getElementById(`laps-wrapper-${id}`);
+                this.lapsTable = this.lapsContainer.parentElement;
 
                 // Initialize with default theme
                 this.applyTheme(themes[0]);
@@ -257,7 +274,6 @@
                 const config = this.id === 1 ? theme.t1 : theme.t2;
                 
                 // Reset BG classes
-                // Added border class for bg-1 to maintain separation
                 const borderClass = this.id === 1 ? 'border-b-2 landscape:border-b-0 landscape:border-r-2 border-black/30' : '';
                 this.bg.className = `flex-1 relative flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:brightness-110 ${borderClass} ${this.isRunning ? config.bgOn : config.bgOff}`;
                 
@@ -265,18 +281,24 @@
                 this.displayEl.className = `text-6xl sm:text-7xl md:text-8xl font-bold tracking-tighter tabular-nums drop-shadow-lg transition-colors duration-300 ${config.text}`;
                 this.label.className = `font-bold uppercase tracking-widest text-sm ${config.sub}`;
 
+                // Update Lap Container Visuals
+                this.lapsWrapper.className = `h-20 landscape:h-24 rounded-xl p-2 overflow-y-auto pointer-events-auto z-10 backdrop-blur-sm transition-colors duration-300 ${config.lapsBg} ${config.lapsBorder} ${isLapMode ? 'block' : 'hidden'}`;
+                this.lapsTable.className = `w-full text-sm transition-colors duration-300 ${config.lapsText}`;
+                this.emptyMsg.className = `h-full flex items-center justify-center text-xs italic transition-colors duration-300 ${config.lapsEmpty}`;
+
                 // Update Button if not running (if running, it's red)
                 if (!this.isRunning) {
                     this.updateStartButtonVisuals(config.btn, config.shadow, 'text-white');
                 }
                 
-                // Force display update to refresh inner HTML span color
                 this.updateDisplay();
+                this.renderLaps();
             }
 
             updateStartButtonVisuals(bgClass, shadowClass, textClass) {
-                // Clear old color classes
-                this.startBtn.className = `py-3 sm:py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all pointer-events-auto z-10 ${bgClass} ${shadowClass} ${textClass}`;
+                // Ensure correct span class is maintained based on lap mode
+                const spanClass = isLapMode ? '' : 'col-span-2';
+                this.startBtn.className = `${spanClass} py-3 sm:py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all pointer-events-auto z-10 ${bgClass} ${shadowClass} ${textClass}`;
             }
 
             handleBoxClick(e) {
@@ -322,8 +344,10 @@
                 this.startBtn.textContent = "STOP";
                 this.updateStartButtonVisuals('bg-red-500', 'shadow-red-900/50', 'text-white');
                 
-                this.lapBtn.textContent = "LAP";
-                this.lapBtn.disabled = false;
+                if (isLapMode) {
+                    this.lapBtn.textContent = "LAP";
+                    this.lapBtn.disabled = false;
+                }
                 
                 this.bg.classList.remove(config.bgOff);
                 this.bg.classList.add(config.bgOn);
@@ -343,8 +367,10 @@
                 this.startBtn.textContent = "RESUME";
                 this.updateStartButtonVisuals('bg-green-600', 'shadow-green-900/50', 'text-white');
                 
-                this.lapBtn.textContent = "RESET";
-                this.lapBtn.disabled = false;
+                if (isLapMode) {
+                    this.lapBtn.textContent = "RESET";
+                    this.lapBtn.disabled = false;
+                }
                 
                 this.bg.classList.remove(config.bgOn);
                 this.bg.classList.add(config.bgOff);
@@ -361,8 +387,10 @@
                 
                 const config = this.getThemeConfig();
                 
-                this.lapBtn.textContent = "LAP";
-                this.lapBtn.disabled = true;
+                if (isLapMode) {
+                    this.lapBtn.textContent = "LAP";
+                    this.lapBtn.disabled = true;
+                }
                 
                 this.startBtn.textContent = "START";
                 this.updateStartButtonVisuals(config.btn, config.shadow, 'text-white');
@@ -383,7 +411,9 @@
             }
 
             renderLaps() {
+                const config = this.getThemeConfig();
                 this.lapsContainer.innerHTML = '';
+                
                 if (this.laps.length === 0) {
                     this.emptyMsg.style.display = 'flex';
                 } else {
@@ -391,7 +421,7 @@
                     this.laps.forEach((lapTime, index) => {
                         const lapNum = this.laps.length - index;
                         const row = document.createElement('tr');
-                        row.className = "hover:bg-white/5 transition-colors border-b border-white/5 last:border-0";
+                        row.className = `transition-colors border-b last:border-0 ${config.lapsRow}`;
                         
                         let splitTime = lapTime;
                         if (index < this.laps.length - 1) {
@@ -400,7 +430,7 @@
 
                         row.innerHTML = `
                             <td class="pl-2 py-1">#${lapNum}</td>
-                            <td class="text-right pr-2 py-1 font-bold ${index === 0 ? 'text-white' : ''}">
+                            <td class="text-right pr-2 py-1 font-bold ${index === 0 ? config.lapsTextHigh : ''}">
                                 ${this.formatTimePlain(lapTime)}
                                 <div class="text-[10px] opacity-50 font-normal">+${this.formatTimePlain(splitTime)}</div>
                             </td>
@@ -475,10 +505,45 @@
             sw1.applyTheme(newTheme);
             sw2.applyTheme(newTheme);
             
-            // Visual feedback on the button
             const icon = document.querySelector('button[title="Change Theme"] i');
             icon.style.transform = "rotate(180deg)";
             setTimeout(() => icon.style.transform = "rotate(0deg)", 300);
+        }
+
+        function toggleLapMode() {
+            isLapMode = !isLapMode;
+            
+            // Visual Toggle for button
+            const btn = document.getElementById('btn-lap-toggle');
+            if (isLapMode) {
+                btn.classList.add('bg-white', 'text-black');
+                btn.classList.remove('bg-black/50', 'text-white/70');
+            } else {
+                btn.classList.remove('bg-white', 'text-black');
+                btn.classList.add('bg-black/50', 'text-white/70');
+            }
+
+            // Update UI for both stopwatches
+            [sw1, sw2].forEach(sw => {
+                if (isLapMode) {
+                    // Enable Lap Mode
+                    sw.lapBtn.classList.remove('hidden');
+                    sw.lapsWrapper.classList.remove('hidden');
+                    sw.updateStartButtonVisuals(); // Will remove col-span-2
+                    if (!sw.isRunning && sw.elapsedTime > 0) {
+                        sw.lapBtn.textContent = 'RESET';
+                        sw.lapBtn.disabled = false;
+                    } else if (sw.isRunning) {
+                         sw.lapBtn.textContent = 'LAP';
+                         sw.lapBtn.disabled = false;
+                    }
+                } else {
+                    // Disable Lap Mode
+                    sw.lapBtn.classList.add('hidden');
+                    sw.lapsWrapper.classList.add('hidden');
+                    sw.updateStartButtonVisuals(); // Will add col-span-2
+                }
+            });
         }
 
         function toggleFullscreen() {
