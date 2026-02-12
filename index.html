@@ -29,6 +29,8 @@
         body {
             font-family: 'JetBrains Mono', monospace;
             overscroll-behavior: none;
+            /* Disable pull-to-refresh and system touch actions for game-like response */
+            touch-action: none; 
         }
 
         /* Custom Scrollbar */
@@ -44,57 +46,86 @@
         
         * { -webkit-tap-highlight-color: transparent; }
 
-        /* --- Menu Animation Styles --- */
+        /* Dropdown Animation */
+        #settings-panel {
+            transform-origin: top right;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
         
-        /* Default Open State */
-        #btn-lap-toggle, #btn-mail {
-            transform: translate(0, 0) scale(1);
+        #settings-panel.closed {
+            opacity: 0;
+            transform: scale(0.95) translateY(-10px);
+            pointer-events: none;
+        }
+        
+        #settings-panel.open {
             opacity: 1;
-            transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        /* Collapsed State (Items move INTO the center) */
-        
-        /* Portrait (Horizontal Movement) */
-        /* Lap Toggle moves Right towards center */
-        #control-bar.collapsed #btn-lap-toggle {
-            transform: translateX(200%) scale(0.1);
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        /* Mail moves Left towards center */
-        #control-bar.collapsed #btn-mail {
-            transform: translateX(-200%) scale(0.1);
-            opacity: 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        /* Landscape (Vertical Movement) */
-        @media (orientation: landscape) {
-            /* Lap Toggle moves Down towards center */
-            #control-bar.collapsed #btn-lap-toggle {
-                transform: translateY(200%) scale(0.1);
-            }
-            /* Mail moves Up towards center */
-            #control-bar.collapsed #btn-mail {
-                transform: translateY(-200%) scale(0.1);
-            }
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
         }
     </style>
 </head>
-<body class="bg-black h-screen w-screen overflow-hidden text-white no-select flex flex-col landscape:flex-row">
+<body class="bg-black h-screen w-screen overflow-hidden text-white no-select flex flex-col landscape:flex-row touch-none">
 
-    <!-- FIXED CONTROLS (Top) -->
-    <!-- 1. Color Picker (Fixed Top Center) -->
-    <button id="btn-theme" onclick="cycleTheme()" class="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 w-10 h-10 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-md text-white/50 hover:text-white hover:bg-black/60 transition-all shadow-lg border border-white/5" title="Change Theme">
-        <i class="fas fa-palette"></i>
-    </button>
+    <!-- HEADER BAR -->
+    <header class="fixed top-0 left-0 w-full h-16 z-50 px-4 flex items-center justify-between bg-gradient-to-b from-black/80 to-transparent pointer-events-none">
+        
+        <!-- Left: Logo & Branding -->
+        <div class="flex items-center space-x-3 pointer-events-auto">
+            <div class="w-8 h-8 md:w-9 md:h-9 hover:scale-110 transition-transform cursor-pointer" onclick="location.reload()">
+                <img src="logo.svg" alt="DuoWatch" class="w-full h-full object-contain drop-shadow-lg">
+            </div>
+            <span class="font-bold text-lg tracking-wider opacity-80 hidden sm:block">DuoWatch</span>
+        </div>
+
+        <!-- Right: Actions -->
+        <div class="flex items-center space-x-2 pointer-events-auto">
+            
+            <!-- Reset -->
+            <button onclick="resetAll()" id="btn-reset" class="w-10 h-10 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all" title="Reset All">
+                <i class="fas fa-undo"></i>
+            </button>
+
+            <!-- Fullscreen -->
+            <button onclick="toggleFullscreen()" id="btn-fullscreen" class="w-10 h-10 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all" title="Fullscreen">
+                <i class="fas fa-expand"></i>
+            </button>
+
+            <!-- Settings Toggle -->
+            <button onclick="toggleSettings()" id="btn-settings" class="w-10 h-10 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 transition-all bg-white/5 border border-white/10" title="More Options">
+                <i class="fas fa-cog"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- SETTINGS DROPDOWN (Hidden by default) -->
+    <div id="settings-panel" class="closed fixed top-16 right-4 z-50 w-48 bg-neutral-900/90 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl p-2 flex flex-col space-y-1">
+        
+        <!-- Color Theme -->
+        <button onclick="cycleTheme()" class="w-full text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-all flex items-center justify-between group">
+            <span class="text-sm font-medium text-white/80 group-hover:text-white">Theme</span>
+            <i class="fas fa-palette text-white/50 group-hover:text-white transition-colors" id="icon-theme"></i>
+        </button>
+
+        <!-- Lap Mode -->
+        <button onclick="toggleLapMode()" class="w-full text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-all flex items-center justify-between group">
+            <span class="text-sm font-medium text-white/80 group-hover:text-white">Lap Mode</span>
+            <i class="fas fa-flag text-white/50 group-hover:text-white transition-colors" id="icon-lap-toggle"></i>
+        </button>
+
+        <!-- Mail -->
+        <a href="mailto:arunthomas04042001@gmail.com" class="w-full text-left px-4 py-3 rounded-xl hover:bg-white/10 transition-all flex items-center justify-between group">
+            <span class="text-sm font-medium text-white/80 group-hover:text-white">Contact</span>
+            <i class="fas fa-envelope text-white/50 group-hover:text-white transition-colors"></i>
+        </a>
+    </div>
 
     <!-- STOPWATCH 1 (Left/Top) -->
-    <div class="flex-1 relative flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:brightness-110 border-b-2 landscape:border-b-0 landscape:border-r-2 border-black/30" id="bg-1" onclick="sw1.handleBoxClick(event)">
+    <!-- Added ontouchstart for immediate response, removed onClick reliance for box interaction -->
+    <div class="flex-1 relative flex flex-col justify-between pt-20 pb-4 px-4 transition-colors duration-300 cursor-pointer active:brightness-110 border-b-2 landscape:border-b-0 landscape:border-r-2 border-black/30 touch-none" id="bg-1" onclick="sw1.handleBoxClick(event)" ontouchstart="sw1.handleBoxTouch(event)">
         <!-- Header -->
         <div class="flex justify-between items-center opacity-70 pointer-events-none">
-            <span class="font-bold uppercase tracking-widest text-sm" id="label-1"><i class="fas fa-stopwatch mr-2"></i>Timer A</span>
+            <span class="font-bold uppercase tracking-widest text-xs sm:text-sm" id="label-1"><i class="fas fa-stopwatch mr-2"></i>Timer A</span>
             <button onclick="sw1.toggleMute()" class="text-white/50 hover:text-white transition pointer-events-auto p-2">
                 <i class="fas fa-volume-up" id="icon-mute-1"></i>
             </button>
@@ -109,17 +140,15 @@
 
         <!-- Controls -->
         <div class="grid grid-cols-2 gap-4 mb-2">
-            <!-- Lap button hidden by default -->
             <button id="btn-lap-1" onclick="sw1.lap()" disabled class="hidden py-3 sm:py-4 rounded-2xl bg-black/20 text-white/50 font-bold text-lg backdrop-blur-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-white/10 pointer-events-auto z-10 hover:bg-black/40">
                 LAP
             </button>
-            <!-- Start button spans full width by default -->
             <button id="btn-start-1" onclick="sw1.toggle()" class="col-span-2 py-3 sm:py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all pointer-events-auto z-10 text-white">
                 START
             </button>
         </div>
         
-        <!-- Laps (Hidden by default) -->
+        <!-- Laps -->
         <div id="laps-wrapper-1" class="hidden h-20 landscape:h-24 rounded-xl p-2 overflow-y-auto pointer-events-auto z-10 backdrop-blur-sm transition-colors duration-300" onclick="event.stopPropagation()">
             <table class="w-full text-sm transition-colors duration-300">
                 <tbody id="laps-1" class="font-mono"></tbody>
@@ -128,44 +157,12 @@
         </div>
     </div>
 
-    <!-- CENTRAL CONTROL BAR (Floating) -->
-    <!-- Balanced Layout: [Lap (Hidden)] [Reset] [Logo] [Fullscreen] [Mail (Hidden)] -->
-    <div id="control-bar" class="absolute top-1/2 landscape:top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 
-                flex items-center justify-center pointer-events-none
-                flex-row space-x-3
-                landscape:flex-col landscape:space-x-0 landscape:space-y-4">
-        
-        <!-- 1. Lap Mode Toggle (Collapsible) -->
-        <button id="btn-lap-toggle" onclick="toggleLapMode()" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white hover:bg-black/70 transition-all pointer-events-auto relative z-0 shadow-lg border border-white/10" title="Toggle Lap Mode">
-            <i class="fas fa-flag"></i>
-        </button>
-
-        <!-- 2. Reset (Static) -->
-        <button onclick="resetAll()" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white transition-all hover:bg-black/70 pointer-events-auto relative z-10 shadow-lg border border-white/10" title="Reset All">
-            <i class="fas fa-undo text-sm"></i>
-        </button>
-
-        <!-- 3. Logo (Trigger) -->
-        <div onclick="toggleMenu()" class="w-8 h-8 md:w-10 md:h-10 hover:scale-110 active:scale-95 transition-transform duration-300 cursor-pointer relative z-20 pointer-events-auto drop-shadow-2xl" title="Toggle Menu">
-            <img src="logo.svg" alt="DuoWatch Logo" class="w-full h-full object-contain">
-        </div>
-
-        <!-- 4. Fullscreen (Static) -->
-        <button onclick="toggleFullscreen()" id="btn-fullscreen" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white transition-all hover:bg-black/70 pointer-events-auto relative z-10 shadow-lg border border-white/10" title="Toggle Fullscreen">
-            <i class="fas fa-expand"></i>
-        </button>
-
-        <!-- 5. Mail (Collapsible) -->
-        <a id="btn-mail" href="mailto:arunthomas04042001@gmail.com" class="w-10 h-10 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-md text-white/70 hover:text-white hover:bg-black/70 pointer-events-auto relative z-0 shadow-lg border border-white/10" title="Contact Developer">
-            <i class="fas fa-envelope"></i>
-        </a>
-    </div>
-
     <!-- STOPWATCH 2 (Right/Bottom) -->
-    <div class="flex-1 relative flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:brightness-110" id="bg-2" onclick="sw2.handleBoxClick(event)">
+    <!-- Added ontouchstart for immediate response -->
+    <div class="flex-1 relative flex flex-col justify-between pt-4 landscape:pt-20 pb-4 px-4 transition-colors duration-300 cursor-pointer active:brightness-110 touch-none" id="bg-2" onclick="sw2.handleBoxClick(event)" ontouchstart="sw2.handleBoxTouch(event)">
         <!-- Header -->
         <div class="flex justify-between items-center opacity-70 pointer-events-none">
-            <span class="font-bold uppercase tracking-widest text-sm" id="label-2"><i class="fas fa-stopwatch mr-2"></i>Timer B</span>
+            <span class="font-bold uppercase tracking-widest text-xs sm:text-sm" id="label-2"><i class="fas fa-stopwatch mr-2"></i>Timer B</span>
             <button onclick="sw2.toggleMute()" class="text-white/50 hover:text-white transition pointer-events-auto p-2">
                 <i class="fas fa-volume-up" id="icon-mute-2"></i>
             </button>
@@ -180,17 +177,15 @@
 
         <!-- Controls -->
         <div class="grid grid-cols-2 gap-4 mb-2">
-            <!-- Lap button hidden by default -->
             <button id="btn-lap-2" onclick="sw2.lap()" disabled class="hidden py-3 sm:py-4 rounded-2xl bg-black/20 text-white/50 font-bold text-lg backdrop-blur-sm transition-all disabled:opacity-30 disabled:cursor-not-allowed border border-white/10 pointer-events-auto z-10 hover:bg-black/40">
                 LAP
             </button>
-            <!-- Start button spans full width by default -->
             <button id="btn-start-2" onclick="sw2.toggle()" class="col-span-2 py-3 sm:py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all pointer-events-auto z-10 text-white">
                 START
             </button>
         </div>
 
-        <!-- Laps (Hidden by default) -->
+        <!-- Laps -->
         <div id="laps-wrapper-2" class="hidden h-20 landscape:h-24 rounded-xl p-2 overflow-y-auto pointer-events-auto z-10 backdrop-blur-sm transition-colors duration-300" onclick="event.stopPropagation()">
             <table class="w-full text-sm transition-colors duration-300">
                 <tbody id="laps-2" class="font-mono"></tbody>
@@ -225,7 +220,7 @@
             { // 5. Miami: Pink vs Teal
                 id: 4,
                 t1: { text: 'text-pink-500', sub: 'text-pink-300', bgOff: 'bg-pink-950/20', bgOn: 'bg-pink-900/40', btn: 'bg-pink-600', shadow: 'shadow-pink-900/50', lapsBg: 'bg-black/20', lapsBorder: 'border-white/5', lapsText: 'text-white/60', lapsEmpty: 'text-white/30', lapsRow: 'hover:bg-white/5 border-white/5', lapsTextHigh: 'text-white' },
-                t2: { text: 'text-teal-400', sub: 'text-teal-200', bgOff: 'bg-teal-950/20', bgOn: 'bg-teal-900/40', btn: 'bg-teal-600', shadow: 'shadow-teal-900/50', lapsBg: 'bg-black/20', lapsBorder: 'border-white/5', lapsText: 'text-white/60', lapsEmpty: 'text-white/30', lapsRow: 'hover:bg-white/5 border-white/5', lapsTextHigh: 'text-white' }
+                t2: { text: 'text-teal-400', sub: 'text-teal-200', bgOff: 'bg-teal-950/20', bgOn: 'bg-teal-900/40', btn: 'bg-teal-600', shadow: 'shadow-teal-900/50', lapsBg: 'bg-black/20', lapsBorder: 'border-white/5', lapsText: 'text-white/60', lapsEmpty: 'text-white/30', lapsRow: 'hover:bg-white/5 border-white/5', lapsTextHigh: 'text-white' },
             },
             { // 6. Forest: Amber vs Emerald
                 id: 5,
@@ -273,11 +268,11 @@
                 
                 // Reset BG classes
                 const borderClass = this.id === 1 ? 'border-b-2 landscape:border-b-0 landscape:border-r-2 border-black/30' : '';
-                this.bg.className = `flex-1 relative flex flex-col justify-between p-4 transition-colors duration-300 cursor-pointer active:brightness-110 ${borderClass} ${this.isRunning ? config.bgOn : config.bgOff}`;
+                this.bg.className = `flex-1 relative flex flex-col justify-between ${this.id === 1 ? 'pt-20' : 'pt-4 landscape:pt-20'} pb-4 px-4 transition-colors duration-300 cursor-pointer active:brightness-110 ${borderClass} ${this.isRunning ? config.bgOn : config.bgOff} touch-none`;
                 
                 // Update Text Colors
                 this.displayEl.className = `text-6xl sm:text-7xl md:text-8xl font-bold tracking-tighter tabular-nums drop-shadow-lg transition-colors duration-300 ${config.text}`;
-                this.label.className = `font-bold uppercase tracking-widest text-sm ${config.sub}`;
+                this.label.className = `font-bold uppercase tracking-widest text-xs sm:text-sm ${config.sub}`;
 
                 // Update Lap Container Visuals
                 this.lapsWrapper.className = `h-20 landscape:h-24 rounded-xl p-2 overflow-y-auto pointer-events-auto z-10 backdrop-blur-sm transition-colors duration-300 ${config.lapsBg} ${config.lapsBorder} ${isLapMode ? 'block' : 'hidden'}`;
@@ -299,8 +294,20 @@
                 this.startBtn.className = `${spanClass} py-3 sm:py-4 rounded-2xl font-bold text-lg shadow-lg active:scale-95 transition-all pointer-events-auto z-10 ${bgClass} ${shadowClass} ${textClass}`;
             }
 
+            // Mouse Click Handler
             handleBoxClick(e) {
-                if (e.target.closest('button') || e.target.closest('a') || e.target.closest('input')) return;
+                if (e.target.closest('button, a, input, [role="button"]')) return;
+                this.toggle();
+            }
+
+            // Touch Handler (Competitive Mode: Zero Latency)
+            handleBoxTouch(e) {
+                // Ignore if touching a button
+                if (e.target.closest('button, a, input, [role="button"]')) return;
+                
+                // Prevent default prevents ghost clicks and scrolling
+                if (e.cancelable) e.preventDefault();
+                
                 this.toggle();
             }
 
@@ -483,18 +490,39 @@
         const sw1 = new Stopwatch(1);
         const sw2 = new Stopwatch(2);
 
-        // Menu Toggle Logic
-        function toggleMenu() {
-            const bar = document.getElementById('control-bar');
-            bar.classList.toggle('collapsed');
+        // Settings Toggle Logic
+        function toggleSettings() {
+            const panel = document.getElementById('settings-panel');
+            const btn = document.getElementById('btn-settings');
+            
+            if (panel.classList.contains('closed')) {
+                panel.classList.remove('closed');
+                panel.classList.add('open');
+                btn.classList.add('bg-white', 'text-black');
+            } else {
+                panel.classList.remove('open');
+                panel.classList.add('closed');
+                btn.classList.remove('bg-white', 'text-black');
+            }
         }
+
+        // Close menu when clicking outside
+        document.addEventListener('click', (e) => {
+            const panel = document.getElementById('settings-panel');
+            const btn = document.getElementById('btn-settings');
+            if (!panel.contains(e.target) && !btn.contains(e.target) && panel.classList.contains('open')) {
+                toggleSettings();
+            }
+        });
 
         function resetAll() {
             sw1.reset();
             sw2.reset();
-            const btn = document.querySelector('button[title="Reset All"] i');
-            btn.classList.add('fa-spin');
-            setTimeout(() => btn.classList.remove('fa-spin'), 500);
+            const btn = document.querySelector('#btn-reset i');
+            if(btn) {
+                btn.classList.add('fa-spin');
+                setTimeout(() => btn.classList.remove('fa-spin'), 500);
+            }
         }
 
         function cycleTheme() {
@@ -503,31 +531,30 @@
             sw1.applyTheme(newTheme);
             sw2.applyTheme(newTheme);
             
-            const icon = document.querySelector('button[title="Change Theme"] i');
-            icon.style.transform = "rotate(180deg)";
-            setTimeout(() => icon.style.transform = "rotate(0deg)", 300);
+            const icon = document.getElementById('icon-theme');
+            if(icon) {
+                icon.style.transform = "rotate(180deg)";
+                setTimeout(() => icon.style.transform = "rotate(0deg)", 300);
+            }
         }
 
         function toggleLapMode() {
             isLapMode = !isLapMode;
             
-            // Visual Toggle for button
-            const btn = document.getElementById('btn-lap-toggle');
+            const icon = document.getElementById('icon-lap-toggle');
             if (isLapMode) {
-                btn.classList.add('bg-white', 'text-black');
-                btn.classList.remove('bg-black/50', 'text-white/70');
+                icon.classList.remove('text-white/50');
+                icon.classList.add('text-green-400');
             } else {
-                btn.classList.remove('bg-white', 'text-black');
-                btn.classList.add('bg-black/50', 'text-white/70');
+                icon.classList.remove('text-green-400');
+                icon.classList.add('text-white/50');
             }
 
-            // Update UI for both stopwatches
             [sw1, sw2].forEach(sw => {
                 if (isLapMode) {
-                    // Enable Lap Mode
                     sw.lapBtn.classList.remove('hidden');
                     sw.lapsWrapper.classList.remove('hidden');
-                    sw.updateStartButtonVisuals(); // Will remove col-span-2
+                    sw.updateStartButtonVisuals();
                     if (!sw.isRunning && sw.elapsedTime > 0) {
                         sw.lapBtn.textContent = 'RESET';
                         sw.lapBtn.disabled = false;
@@ -536,10 +563,9 @@
                          sw.lapBtn.disabled = false;
                     }
                 } else {
-                    // Disable Lap Mode
                     sw.lapBtn.classList.add('hidden');
                     sw.lapsWrapper.classList.add('hidden');
-                    sw.updateStartButtonVisuals(); // Will add col-span-2
+                    sw.updateStartButtonVisuals();
                 }
             });
         }
@@ -554,7 +580,9 @@
 
         document.addEventListener('fullscreenchange', () => {
             const icon = document.querySelector('#btn-fullscreen i');
-            icon.className = document.fullscreenElement ? 'fas fa-compress' : 'fas fa-expand';
+            if(icon) {
+                icon.className = document.fullscreenElement ? 'fas fa-compress' : 'fas fa-expand';
+            }
         });
 
         document.addEventListener('keydown', (e) => {
